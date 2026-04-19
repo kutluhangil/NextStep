@@ -50,9 +50,10 @@ const SelectWrap = ({ name, value, onChange, options, iCls, isDark }: {
 
 const AddApplication = () => {
     const navigate = useNavigate();
-    const addApplication = useAppStore(state => state.addApplication);
+    const addApplicationAsync = useAppStore(state => state.addApplicationAsync);
     const { t } = useLanguage();
     const [showToast, setShowToast] = useState(false);
+    const [submitting, setSubmitting] = useState(false);
     const isDark = useDark();
 
     const iCls = isDark
@@ -83,12 +84,19 @@ const AddApplication = () => {
     const hc = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
         setForm(p => ({ ...p, [e.target.name]: e.target.value }));
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (form.companyName && form.position) {
-            addApplication(form as Omit<Application, 'id' | 'no' | 'createdAt'>);
-            setShowToast(true);
-            setTimeout(() => { setShowToast(false); navigate('/dashboard'); }, 1700);
+        if (form.companyName && form.position && !submitting) {
+            setSubmitting(true);
+            try {
+                await addApplicationAsync(form as Omit<Application, 'id' | 'no' | 'createdAt'>);
+                setShowToast(true);
+                setTimeout(() => { setShowToast(false); navigate('/dashboard'); }, 1700);
+            } catch (error) {
+                console.error(error);
+                alert("Kaydedilirken bir problem oluştu. Lütfen bağlantınızı kontrol edin.");
+                setSubmitting(false);
+            }
         }
     };
 
@@ -187,10 +195,15 @@ const AddApplication = () => {
                             className={`w-full sm:w-auto rounded-full border px-8 py-3.5 text-sm font-semibold transition-all ${isDark ? 'border-white/10 bg-white/5 text-white/70 hover:bg-white/10' : 'border-black/10 bg-white text-black/70 hover:bg-black/5'}`}>
                             {t('add.cancel')}
                         </button>
-                        <button type="submit"
-                            className="w-full sm:w-auto rounded-full px-10 py-3.5 text-sm font-bold text-white transition-all hover:shadow-[0_8px_24px_rgba(249,115,22,0.35)] hover:-translate-y-0.5"
+                        <button type="submit" disabled={submitting}
+                            className="w-full sm:w-auto rounded-full px-10 py-3.5 text-sm font-bold text-white transition-all hover:shadow-[0_8px_24px_rgba(249,115,22,0.35)] hover:-translate-y-0.5 disabled:opacity-70 disabled:cursor-not-allowed"
                             style={{ background: 'linear-gradient(135deg, #f97316, #ec4899, #14b8a6)' }}>
-                            {t('add.save')}
+                            {submitting ? (
+                                <span className="flex items-center justify-center gap-2">
+                                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                    Kaydediliyor...
+                                </span>
+                            ) : t('add.save')}
                         </button>
                     </motion.div>
                 </form>

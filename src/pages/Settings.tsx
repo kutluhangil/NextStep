@@ -22,7 +22,9 @@ const Settings = () => {
     const setNotifications = useAppStore(state => state.setNotifications);
     const navigate = useNavigate();
     const { t } = useLanguage();
+    const wipeApplications = useAppStore(state => state.wipeApplications);
     const [showConfirm, setShowConfirm] = useState(false);
+    const [wiping, setWiping] = useState(false);
     const [saved, setSaved] = useState<string | null>(null);
     const [fbType, setFbType] = useState('Bug / Hata');
     const [fbMessage, setFbMessage] = useState('');
@@ -65,10 +67,20 @@ const Settings = () => {
         }
     };
 
-    const handleWipeData = () => {
-        localStorage.removeItem('nextstep-storage');
-        localStorage.removeItem('nextstep-remembered-email');
-        window.location.href = '/';
+    const handleWipeData = async () => {
+        if (wiping) return;
+        setWiping(true);
+        try {
+            await wipeApplications();
+            localStorage.removeItem('nextstep-storage');
+            localStorage.removeItem('nextstep-remembered-email');
+            window.location.href = '/';
+        } catch (error) {
+            console.error(error);
+            alert("Silme işlemi sırasında hata oluştu. Bağlantınızı kontrol edin.");
+            setWiping(false);
+            setShowConfirm(false);
+        }
     };
 
     const handleLogout = () => {
@@ -342,12 +354,12 @@ const Settings = () => {
                                         <div className={`text-xs ${isDark ? 'text-rose-400/70' : 'text-rose-600/70'}`}>Tüm başvuru verileri kalıcı olarak silinecek. Emin misiniz?</div>
                                     </div>
                                     <div className="flex items-center gap-3 flex-shrink-0">
-                                        <button onClick={handleWipeData}
-                                            className="rounded-full bg-rose-600 px-5 sm:px-6 py-2.5 text-xs font-bold text-white transition-all hover:bg-rose-700 hover:shadow-[0_4px_16px_rgba(225,29,72,0.4)]">
-                                            Evet, Sil
+                                        <button onClick={handleWipeData} disabled={wiping}
+                                            className="rounded-full bg-rose-600 px-5 sm:px-6 py-2.5 text-xs font-bold text-white transition-all hover:bg-rose-700 hover:shadow-[0_4px_16px_rgba(225,29,72,0.4)] disabled:opacity-50">
+                                            {wiping ? "Siliniyor..." : "Evet, Sil"}
                                         </button>
-                                        <button onClick={() => setShowConfirm(false)}
-                                            className={`rounded-full border px-5 sm:px-6 py-2.5 text-xs font-bold transition-all ${isDark ? 'border-white/10 text-white/60 hover:bg-white/5' : 'border-black/10 text-black/60 hover:bg-black/5'}`}>
+                                        <button onClick={() => setShowConfirm(false)} disabled={wiping}
+                                            className={`rounded-full border px-5 sm:px-6 py-2.5 text-xs font-bold transition-all ${isDark ? 'border-white/10 text-white/60 hover:bg-white/5' : 'border-black/10 text-black/60 hover:bg-black/5'} disabled:opacity-50`}>
                                             İptal
                                         </button>
                                     </div>

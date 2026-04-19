@@ -77,18 +77,19 @@ interface AppState {
 
     // Actions
     login: (email: string, name?: string, uid?: string) => void;
-    logout: () => void;
-    addApplication: (app: Omit<Application, 'id' | 'no' | 'createdAt'>) => void;
-    updateApplication: (id: string, app: Partial<Application>) => void;
-    deleteApplication: (id: string) => void;
-    setApplications: (apps: Application[]) => void;
-    setTheme: (theme: Theme) => void;
-    setNotifications: (prefs: Partial<NotificationPrefs>) => void;
+    // Async Cloud Actions
+    addApplicationAsync: (app: Omit<Application, 'id' | 'no' | 'createdAt'>) => Promise<void>;
+    updateApplicationAsync: (id: string, app: Partial<Application>) => Promise<void>;
+    deleteApplicationAsync: (id: string) => Promise<void>;
+    fetchApplications: () => Promise<void>;
+    wipeApplications: () => Promise<void>;
 }
+
+import { addApplicationFS, updateApplicationFS, deleteApplicationFS, getApplicationsFS, wipeUserApplicationsFS } from '../lib/firestoreService';
 
 export const useAppStore = create<AppState>()(
     persist(
-        (set) => ({
+        (set, get) => ({
             isAuthenticated: false,
             firebaseUid: null,
             user: null,
@@ -104,27 +105,18 @@ export const useAppStore = create<AppState>()(
                 set({ isAuthenticated: true, firebaseUid: uid ?? null, user: { name, email } }),
 
             logout: () =>
-                set({ isAuthenticated: false, firebaseUid: null, user: null }),
+                set({ isAuthenticated: false, firebaseUid: null, user: null, applications: [] }),
 
             addApplication: (appData) =>
                 set((state) => {
-                    const newNo = state.applications.length > 0
-                        ? Math.max(...state.applications.map(a => a.no)) + 1
-                        : 1;
-                    const newApp: Application = {
-                        ...appData,
-                        id: crypto.randomUUID(),
-                        no: newNo,
-                        createdAt: Date.now(),
-                    };
+                    const newNo = state.applications.length > 0 ? Math.max(...state.applications.map(a => a.no)) + 1 : 1;
+                    const newApp: Application = { ...appData, id: crypto.randomUUID(), no: newNo, createdAt: Date.now() };
                     return { applications: [newApp, ...state.applications] };
                 }),
 
             updateApplication: (id, updatedData) =>
                 set((state) => ({
-                    applications: state.applications.map(app =>
-                        app.id === id ? { ...app, ...updatedData } : app
-                    ),
+                    applications: state.applications.map(app => app.id === id ? { ...app, ...updatedData } : app),
                 })),
 
             deleteApplication: (id) =>
@@ -133,14 +125,68 @@ export const useAppStore = create<AppState>()(
                 })),
 
             setApplications: (apps) => set({ applications: apps }),
-
             setTheme: (theme) => set({ theme }),
+            setNotifications: (prefs) => set((state) => ({ notifications: { ...state.notifications, ...prefs } })),
 
-            setNotifications: (prefs) =>
-                set((state) => ({ notifications: { ...state.notifications, ...prefs } })),
+            // --- Async Firebase Actions ---
+            addApplicationAsync: async (appData) => {
+                const { firebaseUid } = get();
+                if (!firebaseUid) throw new Error("Kullanıcı girişi bulunamadı.");
+                
+                // Add to cloud first
+                const docId = await addApplicationFS(firebaseUid, appData);
+                
+                // Then set locally
+                set((state) => {
+                    const newNo = state.applications.length > 0 ? Math.max(...state.applications.map(a => a.no)) + 1 : 1;
+                    const newApp: Application = { ...appData, id: docId, no: newNo, createdAt: Date.now() };
+                    return { applications: [newApp, ...state.applications] };
+                });
+            },
+
+            updateApplicationAsync: async (id, updatedData) => {
+                await updateApplicationFS(id, updatedData);
+                set((state) => ({
+                    applications: state.applications.map(app => app.id === id ? { ...app, ...updatedData } : app),
+                }));
+            },
+
+            deleteApplicationAsync: async (id) => {
+                await deleteApplicationFS(id);
+                set((state) => ({
+                    applications: state.applications.filter(app => app.id !== id),
+                }));
+            },
+
+            fetchApplications: async () => {
+                const { firebaseUid } = get();
+                if (firebaseUid) {
+                    const apps = await getApplicationsFS(firebaseUid);
+                    set({ applications: apps });
+                }
+            },
+
+            wipeApplications: async () => {
+                const { firebaseUid } = get();
+                if (firebaseUid) {
+                    await wipeUserApplicationsFS(firebaseUid);
+                    set({ applications: [] });
+                }
+            }
         }),
         {
             name: 'nextstep-storage',
+            partialize: (state) => ({
+                theme: state.theme,
+                notifications: state.notifications,
+                // Do not persist applications, always pull from DB for real sync
+                // But wait, offline-first means we should persist it. 
+                // Let's persist them, and on start we just fetch and overwrite.
+                applications: state.applications,
+                isAuthenticated: state.isAuthenticated,
+                firebaseUid: state.firebaseUid,
+                user: state.user
+            }),
         }
     )
 );

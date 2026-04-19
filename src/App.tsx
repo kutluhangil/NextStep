@@ -1,7 +1,8 @@
-import React, { Suspense, lazy } from 'react';
+import React, { Suspense, lazy, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import AppLayout from './layouts/AppLayout';
 import { useAppStore } from './store/useAppStore';
+import { onAuthChange } from './lib/authService';
 
 const LandingPage = lazy(() => import('./pages/LandingPage'));
 const Login = lazy(() => import('./pages/auth/Login'));
@@ -27,6 +28,22 @@ const PageLoader = () => (
 );
 
 function App() {
+  const login = useAppStore(state => state.login);
+  const logout = useAppStore(state => state.logout);
+  const fetchApplications = useAppStore(state => state.fetchApplications);
+
+  useEffect(() => {
+    const unsub = onAuthChange(async (user) => {
+      if (user) {
+        login(user.email ?? '', user.displayName ?? '', user.uid);
+        await fetchApplications();
+      } else {
+        logout();
+      }
+    });
+    return () => unsub();
+  }, [login, logout, fetchApplications]);
+
   return (
     <BrowserRouter>
       <Suspense fallback={<PageLoader />}>
