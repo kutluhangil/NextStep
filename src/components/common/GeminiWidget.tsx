@@ -75,7 +75,7 @@ export function GeminiWidget() {
                 whileHover={{ scale: 1.08 }}
                 whileTap={{ scale: 0.94 }}
                 className="fixed bottom-28 right-5 sm:bottom-8 sm:right-6 z-40 w-14 h-14 rounded-full flex items-center justify-center shadow-[0_8px_32px_rgba(99,102,241,0.35)] transition-all"
-                style={{ background: open ? '#1d1d1f' : 'linear-gradient(135deg, #f97316, #ec4899, #a855f7)' }}
+                style={{ background: open ? '#1d1d1f' : 'linear-gradient(135deg, #f97316, #ec4899, #14b8a6)' }}
                 aria-label={t('gemini.title')}
             >
                 <AnimatePresence mode="wait">
@@ -98,7 +98,7 @@ export function GeminiWidget() {
                         style={{ height: 'min(560px, 70dvh)' }}
                     >
                         {/* Header */}
-                        <div className="flex items-center gap-3 px-5 py-4 border-b border-black/5" style={{ background: 'linear-gradient(135deg, #f97316, #ec4899, #a855f7)', borderRadius: '24px 24px 0 0' }}>
+                        <div className="flex items-center gap-3 px-5 py-4 border-b border-black/5" style={{ background: 'linear-gradient(135deg, #f97316, #ec4899, #14b8a6)', borderRadius: '24px 24px 0 0' }}>
                             <div className="w-8 h-8 rounded-xl bg-white/20 flex items-center justify-center text-sm font-bold text-white">G</div>
                             <div className="flex-1 min-w-0">
                                 <p className="text-sm font-bold text-white">{t('gemini.title')}</p>
@@ -139,7 +139,7 @@ export function GeminiWidget() {
                                         ? 'text-white font-medium'
                                         : 'bg-black/4 text-black/80 font-normal'
                                         }`}
-                                        style={m.role === 'user' ? { background: 'linear-gradient(135deg, #f97316, #a855f7)' } : {}}>
+                                        style={m.role === 'user' ? { background: 'linear-gradient(135deg, #f97316, #14b8a6)' } : {}}>
                                         {m.text}
                                     </div>
                                 </div>
@@ -164,7 +164,7 @@ export function GeminiWidget() {
                                 className="flex-1 min-w-0 rounded-xl border border-black/8 bg-[#fafafa] px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400/25 focus:border-orange-300" />
                             <button onClick={send} disabled={!input.trim() || loading}
                                 className="flex-shrink-0 w-9 h-9 rounded-xl flex items-center justify-center text-white transition-all hover:scale-105 disabled:opacity-40"
-                                style={{ background: 'linear-gradient(135deg, #f97316, #a855f7)' }}>
+                                style={{ background: 'linear-gradient(135deg, #f97316, #14b8a6)' }}>
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                                     <line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" />
                                 </svg>

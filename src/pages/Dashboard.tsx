@@ -58,7 +58,7 @@ const Dashboard = () => {
                     transition={{ duration: 0.55, ease: 'easeOut' }}
                     className="relative mb-10 w-full rounded-3xl overflow-hidden"
                     style={{
-                        background: 'linear-gradient(135deg, #f97316 0%, #ec4899 30%, #a855f7 60%, #6366f1 85%, #14b8a6 100%)',
+                        background: 'linear-gradient(135deg, #f97316 0%, #ec4899 30%, #14b8a6 60%, #6366f1 85%, #14b8a6 100%)',
                         backgroundSize: '300% 300%',
                         animation: 'gradientFlow 6s ease infinite',
                     }}

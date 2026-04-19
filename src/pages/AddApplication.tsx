@@ -189,7 +189,7 @@ const AddApplication = () => {
                         </button>
                         <button type="submit"
                             className="w-full sm:w-auto rounded-full px-10 py-3.5 text-sm font-bold text-white transition-all hover:shadow-[0_8px_24px_rgba(249,115,22,0.35)] hover:-translate-y-0.5"
-                            style={{ background: 'linear-gradient(135deg, #f97316, #ec4899, #a855f7)' }}>
+                            style={{ background: 'linear-gradient(135deg, #f97316, #ec4899, #14b8a6)' }}>
                             {t('add.save')}
                         </button>
                     </motion.div>

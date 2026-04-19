@@ -6,20 +6,9 @@ import { Menu, X } from 'lucide-react';
 import NextLogo from '../Icons/NEXT.svg';
 import { useLanguage } from '../../lib/i18n';
 
-export const Navbar = ({ onAboutClick }: { onAboutClick?: () => void }) => {
-    const [isScrolled, setIsScrolled] = useState(false);
-    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-    const isAuthenticated = useAppStore(state => state.isAuthenticated);
-    const navigate = useNavigate();
-    const { lang, setLang, t } = useLanguage();
-
-    useEffect(() => {
-        const handleScroll = () => setIsScrolled(window.scrollY > 20);
-        window.addEventListener('scroll', handleScroll);
-        return () => window.removeEventListener('scroll', handleScroll);
-    }, []);
-
-    const LangToggle = () => (
+const LangToggle = () => {
+    const { lang, setLang } = useLanguage();
+    return (
         <button
             onClick={() => setLang(lang === 'tr' ? 'en' : 'tr')}
             className="flex items-center gap-1 rounded-full border border-black/10 bg-white/70 px-3 py-1.5 text-xs font-bold text-black/70 transition-all hover:border-black/25 hover:bg-white backdrop-blur-sm"
@@ -29,6 +18,20 @@ export const Navbar = ({ onAboutClick }: { onAboutClick?: () => void }) => {
             <span>{lang === 'tr' ? 'TR' : 'EN'}</span>
         </button>
     );
+};
+
+export const Navbar = ({ onAboutClick }: { onAboutClick?: () => void }) => {
+    const [isScrolled, setIsScrolled] = useState(false);
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const isAuthenticated = useAppStore(state => state.isAuthenticated);
+    const navigate = useNavigate();
+    const { t } = useLanguage();
+
+    useEffect(() => {
+        const handleScroll = () => setIsScrolled(window.scrollY > 20);
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
 
     return (
         <>

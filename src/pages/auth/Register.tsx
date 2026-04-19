@@ -50,7 +50,7 @@ const Register = () => {
     return (
         <div className="relative flex min-h-screen items-center justify-center bg-[#f8f8fa] px-6 py-20 overflow-hidden">
             <div className="pointer-events-none absolute -top-32 -right-32 w-96 h-96 bg-orange-100/50 rounded-full blur-3xl" />
-            <div className="pointer-events-none absolute -bottom-32 -left-32 w-96 h-96 bg-violet-100/50 rounded-full blur-3xl" />
+            <div className="pointer-events-none absolute -bottom-32 -left-32 w-96 h-96 bg-teal-100/50 rounded-full blur-3xl" />
 
             <motion.div initial={{ opacity: 0, y: 28 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.55, ease: 'easeOut' }}
                 className="relative w-full max-w-[440px]">

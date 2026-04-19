@@ -17,7 +17,9 @@ function useWordCycler(words: string[]) {
     const [display, setDisplay] = useState(words[0]);
     const [opacity, setOpacity] = useState(1);
     const wordsRef = useRef(words);
-    wordsRef.current = words;
+    useEffect(() => {
+        wordsRef.current = words;
+    }, [words]);
 
     useEffect(() => {
         const SCRAMBLE_MS = 1800;  // 1.8s scramble
@@ -200,7 +202,7 @@ const FeatureShowcase = React.memo(({ bone2, border, ink, inkFaint, lang }: Show
                                 transition: 'all 0.3s cubic-bezier(0.34,1.4,0.64,1)',
                                 color: active === i ? '#fff' : inkFaint,
                                 background: active === i
-                                    ? 'linear-gradient(135deg, #f97316, #a855f7)'
+                                    ? 'linear-gradient(135deg, #f97316, #14b8a6)'
                                     : 'transparent',
                                 boxShadow: active === i ? '0 4px 16px rgba(249,115,22,0.3)' : 'none',
                             }}>
@@ -223,7 +225,7 @@ const FeatureShowcase = React.memo(({ bone2, border, ink, inkFaint, lang }: Show
                         ←
                     </button>
                     <button onClick={next}
-                        style={{ width: 40, height: 40, borderRadius: '50%', border: 'none', background: 'linear-gradient(135deg,#f97316,#a855f7)', cursor: 'pointer', fontSize: 16, color: '#fff', transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        style={{ width: 40, height: 40, borderRadius: '50%', border: 'none', background: 'linear-gradient(135deg,#f97316,#14b8a6)', cursor: 'pointer', fontSize: 16, color: '#fff', transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         →
                     </button>
                 </div>
@@ -291,7 +293,7 @@ const LandingPage = () => {
     const ink = '#1a1a1a';
     const inkMid = '#6b6560';
     const inkFaint = '#a8a39d';
-    const accent = 'linear-gradient(135deg, #f97316 0%, #ec4899 50%, #a855f7 100%)';
+    const accent = 'linear-gradient(135deg, #f97316 0%, #ec4899 50%, #14b8a6 100%)';
 
     return (
         <div className="relative min-h-screen w-full overflow-x-hidden" style={{
@@ -333,14 +335,14 @@ const LandingPage = () => {
 
                     {/* Headline line 2 — scramble with fade */}
                     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.6, delay: 0.35 }}>
-                        <h1
+                        <div
                             style={{
                                 fontSize: 'clamp(52px, 10vw, 112px)',
                                 fontWeight: 900,
                                 letterSpacing: '-0.04em',
                                 lineHeight: 0.92,
                                 marginBottom: 'clamp(24px, 3vw, 32px)',
-                                background: 'linear-gradient(135deg, #f97316 0%, #ec4899 50%, #a855f7 100%)',
+                                background: 'linear-gradient(135deg, #f97316 0%, #ec4899 50%, #14b8a6 100%)',
                                 WebkitBackgroundClip: 'text',
                                 WebkitTextFillColor: 'transparent',
                                 backgroundClip: 'text',
@@ -352,7 +354,7 @@ const LandingPage = () => {
                                 transition: 'opacity 0.25s ease',
                             }}>
                             {scrambledText}
-                        </h1>
+                        </div>
                     </motion.div>
 
                     {/* Sub */}
@@ -441,7 +443,7 @@ const LandingPage = () => {
                 <div className="mx-auto max-w-[1100px]">
                     <Reveal>
                         <div className="text-center mb-16 sm:mb-20">
-                            <p className="text-xs font-bold uppercase tracking-[0.22em] mb-3" style={{ color: '#a855f7' }}>{t('landing.howLabel')}</p>
+                            <p className="text-xs font-bold uppercase tracking-[0.22em] mb-3" style={{ color: '#14b8a6' }}>{t('landing.howLabel')}</p>
                             <h2 className="font-black tracking-[-0.03em] leading-tight" style={{ fontSize: 'clamp(28px,5vw,54px)', color: ink }}>
                                 {t('landing.howTitle')}
                             </h2>

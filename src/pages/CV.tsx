@@ -228,7 +228,7 @@ const CVPage = () => {
                                                             initial={{ width: 0 }}
                                                             animate={{ width: `${(v / 30) * 100}%` }}
                                                             transition={{ duration: 0.8, ease: 'easeOut' }}
-                                                            style={{ background: 'linear-gradient(90deg, #f97316, #a855f7)' }} />
+                                                            style={{ background: 'linear-gradient(90deg, #f97316, #14b8a6)' }} />
                                                     </div>
                                                 </div>
                                             ))}
@@ -285,7 +285,7 @@ const CVPage = () => {
                                         className="flex-1 rounded-xl border border-black/8 bg-[#fafafa] px-4 py-3 text-sm font-medium text-black focus:outline-none focus:ring-2 focus:ring-orange-400/30 focus:border-orange-300" />
                                     <button onClick={handleGemini} disabled={!geminiMsg.trim() || geminiLoading}
                                         className="w-full sm:w-auto rounded-xl px-6 py-3 text-sm font-bold text-white transition-all hover:-translate-y-0.5 disabled:opacity-50"
-                                        style={{ background: 'linear-gradient(135deg, #f97316, #a855f7)' }}>
+                                        style={{ background: 'linear-gradient(135deg, #f97316, #14b8a6)' }}>
                                         {geminiLoading ? '...' : t('gemini.send')}
                                     </button>
                                 </div>

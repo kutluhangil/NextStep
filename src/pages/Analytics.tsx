@@ -127,7 +127,7 @@ const Analytics = () => {
         : 0;
 
     // Trend for response time widget (using monthly data as proxy)
-    const responseData = monthlyData.map((m, i) => ({ name: m.name, days: Math.max(0, 14 - i * 2 + Math.random() * 8) }));
+    const responseData = monthlyData.map((m, i) => ({ name: m.name, days: Math.max(0, 14 - i * 2 + ((i * 3) % 8)) }));
 
     return (
         <div className={`w-full min-h-screen ${isDark ? 'bg-[#0d0d0f]' : 'bg-[#f8f8fa]'}`}>

@@ -280,7 +280,7 @@ const Settings = () => {
                     {/* ── GERİ BİLDİRİM ─────────────────────────────────── */}
                     <motion.div {...fadeUp(0.26)} className={`${card} rounded-[24px] border shadow-[0_2px_24px_#00000008] p-5 sm:p-8`}>
                         <div className="flex items-center gap-3 mb-5">
-                            <div className="w-9 h-9 rounded-xl flex items-center justify-center text-lg" style={{ background: 'linear-gradient(135deg, #f97316, #a855f7)' }}>💬</div>
+                            <div className="w-9 h-9 rounded-xl flex items-center justify-center text-lg" style={{ background: 'linear-gradient(135deg, #f97316, #14b8a6)' }}>💬</div>
                             <div>
                                 <h3 className={`text-base font-bold ${titleColor}`}>{t('settings.fbTitle')}</h3>
                                 <p className={`text-xs ${subColor}`}>{t('settings.fbSub')}</p>
@@ -307,7 +307,7 @@ const Settings = () => {
                                 <p className={`text-xs ${subColor}`}>→ kutluhangul@windowslive.com</p>
                                 <button onClick={handleFeedback} disabled={!fbMessage.trim() || fbSending || fbSent}
                                     className="rounded-full px-5 sm:px-6 py-2.5 text-sm font-bold text-white transition-all hover:-translate-y-0.5 disabled:opacity-50 whitespace-nowrap"
-                                    style={{ background: fbSent ? '#22c55e' : 'linear-gradient(135deg, #f97316, #a855f7)' }}>
+                                    style={{ background: fbSent ? '#22c55e' : 'linear-gradient(135deg, #f97316, #14b8a6)' }}>
                                     {fbSent ? '✓ Gönderildi!' : fbSending ? '...' : t('settings.fbSend')}
                                 </button>
                             </div>
