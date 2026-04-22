@@ -77,6 +77,14 @@ interface AppState {
 
     // Actions
     login: (email: string, name?: string, uid?: string) => void;
+    logout: () => void;
+    addApplication: (appData: Omit<Application, 'id' | 'no' | 'createdAt'>) => void;
+    updateApplication: (id: string, updatedData: Partial<Application>) => void;
+    deleteApplication: (id: string) => void;
+    setApplications: (apps: Application[]) => void;
+    setTheme: (theme: Theme) => void;
+    setNotifications: (prefs: Partial<NotificationPrefs>) => void;
+
     // Async Cloud Actions
     addApplicationAsync: (app: Omit<Application, 'id' | 'no' | 'createdAt'>) => Promise<void>;
     updateApplicationAsync: (id: string, app: Partial<Application>) => Promise<void>;
@@ -107,26 +115,26 @@ export const useAppStore = create<AppState>()(
             logout: () =>
                 set({ isAuthenticated: false, firebaseUid: null, user: null, applications: [] }),
 
-            addApplication: (appData) =>
+            addApplication: (appData: Omit<Application, 'id' | 'no' | 'createdAt'>) =>
                 set((state) => {
                     const newNo = state.applications.length > 0 ? Math.max(...state.applications.map(a => a.no)) + 1 : 1;
                     const newApp: Application = { ...appData, id: crypto.randomUUID(), no: newNo, createdAt: Date.now() };
                     return { applications: [newApp, ...state.applications] };
                 }),
 
-            updateApplication: (id, updatedData) =>
+            updateApplication: (id: string, updatedData: Partial<Application>) =>
                 set((state) => ({
                     applications: state.applications.map(app => app.id === id ? { ...app, ...updatedData } : app),
                 })),
 
-            deleteApplication: (id) =>
+            deleteApplication: (id: string) =>
                 set((state) => ({
                     applications: state.applications.filter(app => app.id !== id),
                 })),
 
-            setApplications: (apps) => set({ applications: apps }),
-            setTheme: (theme) => set({ theme }),
-            setNotifications: (prefs) => set((state) => ({ notifications: { ...state.notifications, ...prefs } })),
+            setApplications: (apps: Application[]) => set({ applications: apps }),
+            setTheme: (theme: Theme) => set({ theme }),
+            setNotifications: (prefs: Partial<NotificationPrefs>) => set((state) => ({ notifications: { ...state.notifications, ...prefs } })),
 
             // --- Async Firebase Actions ---
             addApplicationAsync: async (appData) => {
