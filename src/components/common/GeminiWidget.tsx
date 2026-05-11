@@ -125,7 +125,22 @@ export function GeminiWidget() {
                                             ? ['CV\'mi nasıl iyileştirebilirim?', 'Başvuru sürecime genel bak', 'Mülakat için nasıl hazırlanmalıyım?']
                                             : ['How can I improve my CV?', 'Review my application process', 'How should I prep for interviews?']
                                         ).map(q => (
-                                            <button key={q} onClick={() => { setInput(q); setTimeout(send, 0); }}
+                                            <button key={q} onClick={async () => {
+                                                const text = q.trim();
+                                                if (!text || loading) return;
+                                                const newMessages: Message[] = [...messages, { role: 'user', text }];
+                                                setMessages(newMessages);
+                                                setInput('');
+                                                setLoading(true);
+                                                try {
+                                                    const reply = await sendToGemini(newMessages, lang, applications.length);
+                                                    setMessages(m => [...m, { role: 'model', text: reply }]);
+                                                } catch {
+                                                    setMessages(m => [...m, { role: 'model', text: lang === 'tr' ? '❌ Bir hata oluştu. Tekrar deneyin.' : '❌ An error occurred. Please try again.' }]);
+                                                } finally {
+                                                    setLoading(false);
+                                                }
+                                            }}
                                                 className="w-full text-left text-xs font-medium rounded-xl bg-black/4 px-4 py-2.5 text-black/60 hover:bg-black/8 transition-colors border border-black/5">
                                                 {q}
                                             </button>

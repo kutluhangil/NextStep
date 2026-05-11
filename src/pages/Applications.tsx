@@ -162,9 +162,14 @@ const Applications = () => {
                                 <option value="">Tüm Durumlar</option>
                                 <option value="Süreçte">Süreçte</option>
                                 <option value="Görüşme Bekleniyor">Görüşme Bekleniyor</option>
+                                <option value="Teknik Mülakat">Teknik Mülakat</option>
+                                <option value="İK Mülakatı">İK Mülakatı</option>
+                                <option value="Vaka / Ödev">Vaka / Ödev</option>
                                 <option value="Teklif Alındı">Teklif Alındı</option>
                                 <option value="Olumlu">Olumlu</option>
                                 <option value="Reddedildi">Reddedildi</option>
+                                <option value="İptal">İptal</option>
+                                <option value="Yanıt Yok">Yanıt Yok</option>
                             </select>
                         </div>
                     </div>

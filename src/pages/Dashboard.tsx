@@ -7,10 +7,14 @@ import { useDark } from '../hooks/useDark';
 const statusColor: Record<string, string> = {
     'Süreçte': 'bg-blue-50 text-blue-700 border-blue-100',
     'Görüşme Bekleniyor': 'bg-amber-50 text-amber-700 border-amber-100',
+    'Teknik Mülakat': 'bg-violet-50 text-violet-700 border-violet-100',
+    'İK Mülakatı': 'bg-purple-50 text-purple-700 border-purple-100',
+    'Vaka / Ödev': 'bg-orange-50 text-orange-700 border-orange-100',
     'Teklif Alındı': 'bg-emerald-50 text-emerald-700 border-emerald-100',
     'Olumlu': 'bg-emerald-50 text-emerald-700 border-emerald-100',
-    'Olumsuz': 'bg-red-50 text-red-700 border-red-100',
+    'Reddedildi': 'bg-red-50 text-red-700 border-red-100',
     'İptal': 'bg-gray-50 text-gray-500 border-gray-100',
+    'Yanıt Yok': 'bg-gray-50 text-gray-400 border-gray-100',
 };
 
 const Dashboard = () => {

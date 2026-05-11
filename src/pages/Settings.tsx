@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAppStore } from '../store/useAppStore';
 import emailjs from '@emailjs/browser';
 import { useLanguage } from '../lib/i18n';
+import { useDark } from '../hooks/useDark';
 import type { Theme } from '../store/useAppStore';
 
 const fadeUp = (delay = 0) => ({
@@ -31,8 +32,7 @@ const Settings = () => {
     const [fbSending, setFbSending] = useState(false);
     const [fbSent, setFbSent] = useState(false);
 
-    // Dark mode helpers
-    const isDark = theme === 'dark';
+    const isDark = useDark();
     const card = isDark ? 'bg-[#1c1c1e] border-white/5' : 'bg-white border-black/5';
     const titleColor = isDark ? 'text-white' : 'text-[#1d1d1f]';
     const subColor = isDark ? 'text-white/40' : 'text-black/40';

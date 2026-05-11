@@ -254,7 +254,7 @@ const LandingPage = () => {
             { step: '01', title: 'Kayıt Ol', desc: 'Saniyeler içinde ücretsiz hesap oluşturun.' },
             { step: '02', title: 'Başvuru Ekle', desc: 'Firma, pozisyon, tarih ve platform bilgilerini girin.' },
             { step: '03', title: 'Takip Et', desc: 'Dashboard ile anlık durum ve analizleri görün.' },
-            { step: '04', title: 'Geliş', desc: 'Verilerle hangi stratejinin işe yaradığını öğrenin.' },
+            { step: '04', title: 'Gelişim', desc: 'Verilerle hangi stratejinin işe yaradığını öğrenin.' },
         ]
         : [
             { step: '01', title: 'Sign Up', desc: 'Create a free account in seconds.' },

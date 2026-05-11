@@ -218,20 +218,30 @@ const CVPage = () => {
                                     <ScoreRing score={atsResult.score} />
                                     <div className="flex-1 w-full">
                                         <div className="space-y-3 mb-5">
-                                            {Object.entries(atsResult.breakdown).map(([k, v]) => (
-                                                <div key={k}>
-                                                    <div className="flex justify-between text-xs font-medium text-black/60 mb-1">
-                                                        <span>{k}</span><span>{v}</span>
+                                            {Object.entries(atsResult.breakdown).map(([k, v]) => {
+                                                const maxMap: Record<string, number> = {
+                                                    'Anahtar Kelimeler': 30,
+                                                    'Bölümler': 25,
+                                                    'İçerik Uzunluğu': 20,
+                                                    'İletişim Bilgisi': 20,
+                                                    'Profil Linkleri': 5,
+                                                };
+                                                const max = maxMap[k] ?? 30;
+                                                return (
+                                                    <div key={k}>
+                                                        <div className="flex justify-between text-xs font-medium text-black/60 mb-1">
+                                                            <span>{k}</span><span>{v} / {max}</span>
+                                                        </div>
+                                                        <div className="h-2 rounded-full bg-black/5 overflow-hidden">
+                                                            <motion.div className="h-full rounded-full"
+                                                                initial={{ width: 0 }}
+                                                                animate={{ width: `${Math.min((v / max) * 100, 100)}%` }}
+                                                                transition={{ duration: 0.8, ease: 'easeOut' }}
+                                                                style={{ background: 'linear-gradient(90deg, #f97316, #14b8a6)' }} />
+                                                        </div>
                                                     </div>
-                                                    <div className="h-2 rounded-full bg-black/5 overflow-hidden">
-                                                        <motion.div className="h-full rounded-full"
-                                                            initial={{ width: 0 }}
-                                                            animate={{ width: `${(v / 30) * 100}%` }}
-                                                            transition={{ duration: 0.8, ease: 'easeOut' }}
-                                                            style={{ background: 'linear-gradient(90deg, #f97316, #14b8a6)' }} />
-                                                    </div>
-                                                </div>
-                                            ))}
+                                                );
+                                            })}
                                         </div>
                                         {atsResult.tips.length > 0 && (
                                             <div className="rounded-2xl bg-amber-50 border border-amber-100 p-4">
