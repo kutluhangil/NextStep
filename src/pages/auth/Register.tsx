@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAppStore } from '../../store/useAppStore';
-import { registerUser } from '../../lib/authService';
+import { registerUser, loginWithGoogle } from '../../lib/authService';
 
 const Register = () => {
     const [firstName, setFirstName] = useState('');
@@ -14,6 +14,24 @@ const Register = () => {
     const [error, setError] = useState('');
     const login = useAppStore(state => state.login);
     const navigate = useNavigate();
+
+    const handleGoogleLogin = async () => {
+        setLoading(true);
+        setError('');
+        try {
+            const user = await loginWithGoogle();
+            const name = user.displayName || user.email?.split('@')[0] || 'Kullanıcı';
+            login(user.email ?? '', name, user.uid);
+            navigate('/dashboard');
+        } catch (err: unknown) {
+            const e = err as { code?: string };
+            if (e.code !== 'auth/popup-closed-by-user') {
+                setError('Google ile kayıt yapılamadı. Tekrar deneyin.');
+            }
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const handleRegister = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -99,7 +117,33 @@ const Register = () => {
                         </motion.button>
                     </form>
 
-                    <div className="mt-6 text-center text-sm text-black/50">
+                    {/* Divider */}
+                    <div className="relative mt-5 mb-4">
+                        <div className="absolute inset-0 flex items-center">
+                            <div className="w-full border-t border-black/8" />
+                        </div>
+                        <div className="relative flex justify-center">
+                            <span className="bg-white px-3 text-xs text-black/40 font-medium">veya</span>
+                        </div>
+                    </div>
+
+                    {/* Google Sign Up */}
+                    <button
+                        type="button"
+                        onClick={handleGoogleLogin}
+                        disabled={loading}
+                        className="w-full flex items-center justify-center gap-3 rounded-full border border-black/10 bg-white py-3.5 text-sm font-semibold text-black/80 transition-all hover:bg-black/5 hover:border-black/15 disabled:opacity-50"
+                    >
+                        <svg width="18" height="18" viewBox="0 0 48 48">
+                            <path fill="#FFC107" d="M43.6 20H24v8h11.3C33.6 33.8 29.3 37 24 37c-7.2 0-13-5.8-13-13s5.8-13 13-13c3.1 0 5.9 1.1 8.1 2.9l5.7-5.7C34.5 5.1 29.5 3 24 3 12.4 3 3 12.4 3 24s9.4 21 21 21c10.5 0 20-7.5 20-21 0-1.3-.1-2.7-.4-4z"/>
+                            <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 15.1 18.9 12 24 12c3.1 0 5.9 1.1 8.1 2.9l5.7-5.7C34.5 5.1 29.5 3 24 3 16.3 3 9.6 7.9 6.3 14.7z"/>
+                            <path fill="#4CAF50" d="M24 45c5.2 0 9.9-1.9 13.5-5l-6.2-5.2C29.5 36.5 26.9 37 24 37c-5.2 0-9.5-3.2-11.3-7.8l-6.5 5C9.6 40.2 16.3 45 24 45z"/>
+                            <path fill="#1976D2" d="M43.6 20H24v8h11.3c-.8 2.3-2.3 4.3-4.3 5.8l6.2 5.2C41.3 36.1 44 30.7 44 24c0-1.3-.1-2.7-.4-4z"/>
+                        </svg>
+                        Google ile Kayıt Ol
+                    </button>
+
+                    <div className="mt-5 text-center text-sm text-black/50">
                         Zaten hesabın var mı?{' '}
                         <Link to="/login" className="font-bold text-orange-600 hover:text-orange-700 transition-colors">Giriş Yap</Link>
                     </div>

@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAppStore } from '../store/useAppStore';
 import type { Application } from '../store/useAppStore';
@@ -48,9 +48,11 @@ const SelectWrap = ({ name, value, onChange, options, iCls, isDark }: {
     </div>
 );
 
-const AddApplication = () => {
+const EditApplication = () => {
+    const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
-    const addApplicationAsync = useAppStore(state => state.addApplicationAsync);
+    const updateApplicationAsync = useAppStore(state => state.updateApplicationAsync);
+    const application = useAppStore(state => state.applications.find(a => a.id === id));
     const { t } = useLanguage();
     const [showToast, setShowToast] = useState(false);
     const [submitting, setSubmitting] = useState(false);
@@ -60,53 +62,42 @@ const AddApplication = () => {
         ? "w-full rounded-xl border border-white/8 bg-white/5 px-4 py-3 text-sm font-medium text-white transition-all placeholder:text-white/25 focus:outline-none focus:ring-2 focus:ring-orange-400/30 focus:border-orange-300"
         : "w-full rounded-xl border border-black/8 bg-[#fafafa] px-4 py-3 text-sm font-medium text-black transition-all placeholder:text-black/25 focus:outline-none focus:ring-2 focus:ring-orange-400/30 focus:border-orange-300";
 
-    const [form, setForm] = useState<Partial<Application>>({
-        companyName: '',
-        position: '',
-        department: '',
-        jobLink: '',
-        date: new Date().toISOString().split('T')[0],
-        status: 'Süreçte',
-        priority: 'Orta',
-        city: 'İstanbul',
-        country: 'Türkiye',
-        workType: 'Hibrit',
-        contractType: 'Tam Zamanlı',
-        salaryMin: '',
-        salaryMax: '',
-        salaryCurrency: 'TRY',
-        salaryPeriod: 'Aylık',
-        offerAmount: '',
-        platform: 'LinkedIn',
-        cvVersion: 'V1 Düz',
-        testLink: '',
-        motivation: '',
-        notes: '',
-        interviewNotes: '',
-        interviewDate: '',
-        followUpDate: '',
-        hrName: '',
-        hrEmail: '',
-        rejectionReason: '',
-        tags: '',
-    });
+    const [form, setForm] = useState<Partial<Application>>({});
+
+    useEffect(() => {
+        if (application) {
+            setForm({ ...application });
+        }
+    }, [application]);
+
+    if (!application) {
+        return (
+            <div className={`w-full min-h-screen flex items-center justify-center ${isDark ? 'bg-[#0d0d0f] text-white' : 'bg-[#f8f8fa] text-black'}`}>
+                <div className="text-center">
+                    <p className="text-lg font-semibold mb-4">Başvuru bulunamadı.</p>
+                    <button onClick={() => navigate('/applications')} className="rounded-full bg-indigo-500 text-white px-6 py-2.5 text-sm font-bold">
+                        Listeye Dön
+                    </button>
+                </div>
+            </div>
+        );
+    }
 
     const hc = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
         setForm(p => ({ ...p, [e.target.name]: e.target.value }));
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (form.companyName && form.position && !submitting) {
-            setSubmitting(true);
-            try {
-                await addApplicationAsync(form as Omit<Application, 'id' | 'no' | 'createdAt'>);
-                setShowToast(true);
-                setTimeout(() => { setShowToast(false); navigate('/dashboard'); }, 1700);
-            } catch (error) {
-                console.error(error);
-                alert("Kaydedilirken bir problem oluştu. Lütfen bağlantınızı kontrol edin.");
-                setSubmitting(false);
-            }
+        if (!id || submitting) return;
+        setSubmitting(true);
+        try {
+            await updateApplicationAsync(id, form);
+            setShowToast(true);
+            setTimeout(() => { setShowToast(false); navigate('/applications'); }, 1700);
+        } catch (error) {
+            console.error(error);
+            alert("Güncellenirken bir problem oluştu. Lütfen bağlantınızı kontrol edin.");
+            setSubmitting(false);
         }
     };
 
@@ -117,39 +108,57 @@ const AddApplication = () => {
             <div className="mx-auto max-w-[860px] px-4 sm:px-6 pt-20 sm:pt-24 pb-32">
 
                 <motion.div {...fd(0)} className="mb-8 sm:mb-10">
-                    <p className={`text-xs font-bold tracking-[0.18em] uppercase mb-2 ${isDark ? 'text-white/40' : 'text-black/40'}`}>{t('add.title')}</p>
-                    <h1 className={`text-3xl sm:text-4xl font-bold tracking-tight mb-2 ${isDark ? 'text-white' : 'text-[#1d1d1f]'}`}>{t('add.title')}</h1>
-                    <p className={`text-sm ${isDark ? 'text-white/50' : 'text-black/50'}`}>{t('add.subtitle')}</p>
+                    <p className={`text-xs font-bold tracking-[0.18em] uppercase mb-2 ${isDark ? 'text-white/40' : 'text-black/40'}`}>DÜZENLEME</p>
+                    <h1 className={`text-3xl sm:text-4xl font-bold tracking-tight mb-2 ${isDark ? 'text-white' : 'text-[#1d1d1f]'}`}>
+                        {form.companyName || 'Başvuruyu Düzenle'}
+                    </h1>
+                    <p className={`text-sm ${isDark ? 'text-white/50' : 'text-black/50'}`}>Başvuru bilgilerini güncelleyin.</p>
                 </motion.div>
 
                 <form onSubmit={handleSubmit} className="flex flex-col gap-5">
 
-                    {/* ── 1. Temel Bilgiler ─────────────────────────────── */}
+                    {/* ── 1. Temel Bilgiler */}
                     <SectionCard title={t('add.section.core')} icon="🏢" delay={0.08} isDark={isDark}>
                         <Field label={t('add.company')} isDark={isDark}>
-                            <input name="companyName" type="text" value={form.companyName} onChange={hc} required placeholder="Apple" className={iCls} />
+                            <input name="companyName" type="text" value={form.companyName ?? ''} onChange={hc} required placeholder="Apple" className={iCls} />
                         </Field>
                         <Field label={t('add.position')} isDark={isDark}>
-                            <input name="position" type="text" value={form.position} onChange={hc} required placeholder="Frontend Developer" className={iCls} />
+                            <input name="position" type="text" value={form.position ?? ''} onChange={hc} required placeholder="Frontend Developer" className={iCls} />
                         </Field>
                         <Field label="Departman" isDark={isDark}>
                             <input name="department" type="text" value={form.department ?? ''} onChange={hc} placeholder="Mühendislik" className={iCls} />
                         </Field>
                         <Field label="Öncelik" isDark={isDark}>
-                            <SelectWrap name="priority" value={form.priority ?? 'Orta'} onChange={hc} options={['Düşük', 'Orta', 'Yüksek']} iCls={iCls} isDark={isDark} />
+                            <SelectWrap name="priority" value={form.priority} onChange={hc} options={['Düşük', 'Orta', 'Yüksek']} iCls={iCls} isDark={isDark} />
                         </Field>
                         <Field label={t('add.date')} isDark={isDark}>
-                            <input name="date" type="date" value={form.date} onChange={hc} required className={iCls} />
+                            <input name="date" type="date" value={form.date ?? ''} onChange={hc} required className={iCls} />
                         </Field>
                         <Field label={t('add.status')} isDark={isDark}>
                             <SelectWrap name="status" value={form.status} onChange={hc} options={statusOptions} iCls={iCls} isDark={isDark} />
                         </Field>
                         <Field label={t('add.jobLink')} full isDark={isDark}>
-                            <input name="jobLink" type="url" value={form.jobLink} onChange={hc} placeholder="https://..." className={iCls} />
+                            <input name="jobLink" type="url" value={form.jobLink ?? ''} onChange={hc} placeholder="https://..." className={iCls} />
                         </Field>
                     </SectionCard>
 
-                    {/* ── 2.5 Maaş ──────────────────────────────────────── */}
+                    {/* ── 2. Konum & Çalışma */}
+                    <SectionCard title={t('add.section.location')} icon="📍" delay={0.12} isDark={isDark}>
+                        <Field label={t('add.city')} isDark={isDark}>
+                            <input name="city" type="text" value={form.city ?? ''} onChange={hc} placeholder="İstanbul" className={iCls} />
+                        </Field>
+                        <Field label={t('add.country')} isDark={isDark}>
+                            <input name="country" type="text" value={form.country ?? ''} onChange={hc} placeholder="Türkiye" className={iCls} />
+                        </Field>
+                        <Field label={t('add.workType')} isDark={isDark}>
+                            <SelectWrap name="workType" value={form.workType} onChange={hc} options={['Uzaktan', 'Hibrit', 'Ofis', 'Belirtilmedi']} iCls={iCls} isDark={isDark} />
+                        </Field>
+                        <Field label={t('add.contractType')} isDark={isDark}>
+                            <SelectWrap name="contractType" value={form.contractType} onChange={hc} options={['Tam Zamanlı', 'Yarı Zamanlı', 'Staj', 'Sözleşmeli', 'Freelance']} iCls={iCls} isDark={isDark} />
+                        </Field>
+                    </SectionCard>
+
+                    {/* ── 3. Maaş */}
                     <SectionCard title="Maaş Bilgisi" icon="💰" delay={0.14} isDark={isDark}>
                         <Field label="Min. Maaş" isDark={isDark}>
                             <input name="salaryMin" type="text" value={form.salaryMin ?? ''} onChange={hc} placeholder="30.000" className={iCls} />
@@ -163,25 +172,12 @@ const AddApplication = () => {
                         <Field label="Periyot" isDark={isDark}>
                             <SelectWrap name="salaryPeriod" value={form.salaryPeriod ?? 'Aylık'} onChange={hc} options={['Aylık', 'Yıllık']} iCls={iCls} isDark={isDark} />
                         </Field>
-                    </SectionCard>
-
-                    {/* ── 2. Konum & Çalışma ───────────────────────────── */}
-                    <SectionCard title={t('add.section.location')} icon="📍" delay={0.12} isDark={isDark}>
-                        <Field label={t('add.city')} isDark={isDark}>
-                            <input name="city" type="text" value={form.city} onChange={hc} placeholder="İstanbul" className={iCls} />
-                        </Field>
-                        <Field label={t('add.country')} isDark={isDark}>
-                            <input name="country" type="text" value={form.country} onChange={hc} placeholder="Türkiye" className={iCls} />
-                        </Field>
-                        <Field label={t('add.workType')} isDark={isDark}>
-                            <SelectWrap name="workType" value={form.workType} onChange={hc} options={['Uzaktan', 'Hibrit', 'Ofis', 'Belirtilmedi']} iCls={iCls} isDark={isDark} />
-                        </Field>
-                        <Field label={t('add.contractType')} isDark={isDark}>
-                            <SelectWrap name="contractType" value={form.contractType} onChange={hc} options={['Tam Zamanlı', 'Yarı Zamanlı', 'Staj', 'Sözleşmeli', 'Freelance']} iCls={iCls} isDark={isDark} />
+                        <Field label="Teklif Tutarı" full isDark={isDark}>
+                            <input name="offerAmount" type="text" value={form.offerAmount ?? ''} onChange={hc} placeholder="Teklif alındıysa buraya girin..." className={iCls} />
                         </Field>
                     </SectionCard>
 
-                    {/* ── 3. Platform & Döküman ─────────────────────────── */}
+                    {/* ── 4. Platform & Döküman */}
                     <SectionCard title={t('add.section.platform')} icon="📄" delay={0.16} isDark={isDark}>
                         <Field label={t('add.platform')} isDark={isDark}>
                             <SelectWrap name="platform" value={form.platform} onChange={hc} options={['LinkedIn', 'Kariyer.net', 'Indeed', 'Glassdoor', 'Şirket Web Sitesi', 'Referans', 'E-posta', 'Diğer']} iCls={iCls} isDark={isDark} />
@@ -190,15 +186,15 @@ const AddApplication = () => {
                             <SelectWrap name="cvVersion" value={form.cvVersion} onChange={hc} options={['V1 Düz', 'V2 Tasarım', 'V3 İngilizce', 'V4 Kıdemli', 'Özel']} iCls={iCls} isDark={isDark} />
                         </Field>
                         <Field label={t('add.testLink')} full isDark={isDark}>
-                            <input name="testLink" type="url" value={form.testLink} onChange={hc} placeholder="https://..." className={iCls} />
+                            <input name="testLink" type="url" value={form.testLink ?? ''} onChange={hc} placeholder="https://..." className={iCls} />
                         </Field>
                         <Field label={t('add.motivation')} full isDark={isDark}>
-                            <textarea name="motivation" value={form.motivation} onChange={hc} rows={4} placeholder="Başvururken yazdığınız motivasyon yazısı veya kapak mektubu..."
+                            <textarea name="motivation" value={form.motivation ?? ''} onChange={hc} rows={4} placeholder="Motivasyon yazısı veya kapak mektubu..."
                                 className={iCls + " resize-none"} />
                         </Field>
                     </SectionCard>
 
-                    {/* ── 4. Süreç Notları ─────────────────────────────── */}
+                    {/* ── 5. Süreç Notları */}
                     <SectionCard title={t('add.section.process')} icon="📋" delay={0.2} isDark={isDark}>
                         <Field label="Takip Tarihi" isDark={isDark}>
                             <input name="followUpDate" type="date" value={form.followUpDate ?? ''} onChange={hc} className={iCls} />
@@ -213,37 +209,37 @@ const AddApplication = () => {
                             <input name="hrEmail" type="email" value={form.hrEmail ?? ''} onChange={hc} placeholder="ik@firma.com" className={iCls} />
                         </Field>
                         <Field label={t('add.afterApply')} full isDark={isDark}>
-                            <textarea name="notes" value={form.notes} onChange={hc} rows={3} placeholder="Başvurudan sonra ne oldu? Geri dönüş geldi mi?"
+                            <textarea name="notes" value={form.notes ?? ''} onChange={hc} rows={3} placeholder="Başvurudan sonra ne oldu?"
                                 className={iCls + " resize-none"} />
                         </Field>
                         <Field label="Etiketler (virgülle ayırın)" full isDark={isDark}>
                             <input name="tags" type="text" value={form.tags ?? ''} onChange={hc} placeholder="frontend, react, startup" className={iCls} />
                         </Field>
-                        <Field label={t('add.otherInterviews')} full isDark={isDark}>
-                            <textarea name="rejectionReason" value={form.rejectionReason} onChange={hc} rows={2} placeholder="Teknik mülakat, vaka çalışması, panel görüşmesi..."
+                        <Field label="Diğer Mülakat Süreçleri" full isDark={isDark}>
+                            <textarea name="rejectionReason" value={form.rejectionReason ?? ''} onChange={hc} rows={2} placeholder="Teknik mülakat, vaka çalışması..."
                                 className={iCls + " resize-none"} />
                         </Field>
                         <Field label={t('add.feedback')} full isDark={isDark}>
-                            <textarea name="interviewNotes" value={form.interviewNotes} onChange={hc} rows={3} placeholder="Alınan geri bildirimler, genel izlenimler, öğrendikleriniz..."
+                            <textarea name="interviewNotes" value={form.interviewNotes ?? ''} onChange={hc} rows={3} placeholder="Geri bildirimler, izlenimler..."
                                 className={iCls + " resize-none"} />
                         </Field>
                     </SectionCard>
 
-                    {/* Submit Buttons */}
+                    {/* Buttons */}
                     <motion.div {...fd(0.24)} className="flex flex-col-reverse sm:flex-row justify-end gap-3 pb-12">
                         <button type="button" onClick={() => navigate(-1)}
                             className={`w-full sm:w-auto rounded-full border px-8 py-3.5 text-sm font-semibold transition-all ${isDark ? 'border-white/10 bg-white/5 text-white/70 hover:bg-white/10' : 'border-black/10 bg-white text-black/70 hover:bg-black/5'}`}>
-                            {t('add.cancel')}
+                            İptal
                         </button>
                         <button type="submit" disabled={submitting}
-                            className="w-full sm:w-auto rounded-full px-10 py-3.5 text-sm font-bold text-white transition-all hover:shadow-[0_8px_24px_rgba(249,115,22,0.35)] hover:-translate-y-0.5 disabled:opacity-70 disabled:cursor-not-allowed"
-                            style={{ background: 'linear-gradient(135deg, #f97316, #ec4899, #14b8a6)' }}>
+                            className="w-full sm:w-auto rounded-full px-10 py-3.5 text-sm font-bold text-white transition-all hover:shadow-[0_8px_24px_rgba(99,102,241,0.35)] hover:-translate-y-0.5 disabled:opacity-70 disabled:cursor-not-allowed"
+                            style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6, #14b8a6)' }}>
                             {submitting ? (
                                 <span className="flex items-center justify-center gap-2">
                                     <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                                    Kaydediliyor...
+                                    Güncelleniyor...
                                 </span>
-                            ) : t('add.save')}
+                            ) : 'Güncelle'}
                         </button>
                     </motion.div>
                 </form>
@@ -257,7 +253,7 @@ const AddApplication = () => {
                             className={`fixed bottom-32 left-1/2 z-50 rounded-full border shadow-2xl px-6 py-3 text-sm font-semibold flex items-center gap-2 ${isDark ? 'bg-[#1c1c1e] border-white/10 text-white' : 'bg-white border-black/10 text-[#1d1d1f]'}`}
                         >
                             <div className="w-2 h-2 rounded-full bg-emerald-500" />
-                            {t('add.saved')}
+                            Başvuru başarıyla güncellendi
                         </motion.div>
                     )}
                 </AnimatePresence>
@@ -266,4 +262,4 @@ const AddApplication = () => {
     );
 };
 
-export default AddApplication;
+export default EditApplication;

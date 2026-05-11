@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAppStore } from '../store/useAppStore';
+import type { Application } from '../store/useAppStore';
 import emailjs from '@emailjs/browser';
 import { useLanguage } from '../lib/i18n';
 import { useDark } from '../hooks/useDark';
@@ -31,6 +32,9 @@ const Settings = () => {
     const [fbMessage, setFbMessage] = useState('');
     const [fbSending, setFbSending] = useState(false);
     const [fbSent, setFbSent] = useState(false);
+    const [importing, setImporting] = useState(false);
+    const importRef = useRef<HTMLInputElement>(null);
+    const addApplicationAsync = useAppStore(state => state.addApplicationAsync);
 
     const isDark = useDark();
     const card = isDark ? 'bg-[#1c1c1e] border-white/5' : 'bg-white border-black/5';
@@ -91,6 +95,39 @@ const Settings = () => {
     const toast = (msg: string) => {
         setSaved(msg);
         setTimeout(() => setSaved(null), 2000);
+    };
+
+    const handleImportJSON = () => importRef.current?.click();
+
+    const handleImportFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        setImporting(true);
+        try {
+            const text = await file.text();
+            const json = JSON.parse(text);
+            const apps: Partial<Application>[] = Array.isArray(json)
+                ? json
+                : Array.isArray(json.applications)
+                    ? json.applications
+                    : [];
+            if (apps.length === 0) { toast('Geçerli başvuru bulunamadı.'); return; }
+
+            let count = 0;
+            for (const app of apps) {
+                const { id: _id, no: _no, createdAt: _ca, userId: _uid, ...rest } = app as Application & { userId?: string };
+                if (rest.companyName && rest.position) {
+                    await addApplicationAsync(rest as Omit<Application, 'id' | 'no' | 'createdAt'>);
+                    count++;
+                }
+            }
+            toast(`${count} başvuru içe aktarıldı ✓`);
+        } catch {
+            toast('JSON dosyası okunamadı.');
+        } finally {
+            setImporting(false);
+            e.target.value = '';
+        }
     };
 
     // Export from Zustand store (real data, not localStorage)
@@ -268,6 +305,21 @@ const Settings = () => {
                         <SettingRow icon="🎯" title="Teklif Bildirimi" description="Teklif alındığında özel hatırlatma">
                             <Toggle checked={notifications.offerAlerts} onChange={() => { setNotifications({ offerAlerts: !notifications.offerAlerts }); toast('Tercih güncellendi'); }} />
                         </SettingRow>
+
+                        <SettingRow icon="🔔" title="Tarayıcı Bildirimleri" description="Takip tarihi gelen başvurular için masaüstü bildirimi">
+                            {typeof Notification !== 'undefined' && Notification.permission === 'granted' ? (
+                                <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded-full">Aktif ✓</span>
+                            ) : (
+                                <button
+                                    onClick={async () => {
+                                        const perm = await Notification.requestPermission();
+                                        toast(perm === 'granted' ? 'Bildirim izni verildi ✓' : 'Bildirim izni reddedildi');
+                                    }}
+                                    className={`whitespace-nowrap rounded-full border px-5 py-2 text-xs font-bold transition-all hover:border-indigo-300 hover:text-indigo-600 hover:bg-indigo-50 ${isDark ? 'border-white/10 text-white/60' : 'border-black/10 text-black/70'}`}>
+                                    İzin Ver
+                                </button>
+                            )}
+                        </SettingRow>
                     </motion.div>
 
                     {/* ── VERİ YÖNETİMİ ────────────────────────────────────── */}
@@ -279,6 +331,14 @@ const Settings = () => {
                             <button onClick={handleExportJSON}
                                 className={`whitespace-nowrap rounded-full border px-5 py-2 text-xs font-bold transition-all hover:border-emerald-300 hover:text-emerald-600 hover:bg-emerald-50 ${isDark ? 'border-white/10 text-white/60' : 'border-black/10 text-black/70'}`}>
                                 JSON İndir
+                            </button>
+                        </SettingRow>
+
+                        <SettingRow icon="📤" title="Verileri İçe Aktar" description="Daha önce dışa aktarılan JSON yedeğini geri yükle">
+                            <input ref={importRef} type="file" accept=".json" className="hidden" onChange={handleImportFile} />
+                            <button onClick={handleImportJSON} disabled={importing}
+                                className={`whitespace-nowrap rounded-full border px-5 py-2 text-xs font-bold transition-all hover:border-indigo-300 hover:text-indigo-600 hover:bg-indigo-50 disabled:opacity-50 ${isDark ? 'border-white/10 text-white/60' : 'border-black/10 text-black/70'}`}>
+                                {importing ? 'Aktarılıyor...' : 'JSON Yükle'}
                             </button>
                         </SettingRow>
 
