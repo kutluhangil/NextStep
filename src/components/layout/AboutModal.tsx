@@ -220,57 +220,32 @@ export const AboutModal = ({ isOpen, onClose }: Props) => {
                                     ))}
                                 </div>
 
-                                {/* ── Two Column: Tech Stack + Strengths ── */}
-                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '24px' }}>
-
-                                    {/* Tech Stack Code Block */}
-                                    <div style={{
+                                {/* ── Tech Stack ── */}
+                                <motion.div
+                                    initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7, duration: 0.45 }}
+                                    style={{
                                         background: '#fff', border: `1px solid ${BORDER}`,
                                         borderRadius: '20px', padding: '22px',
                                         boxShadow: '0 4px 16px rgba(0,0,0,0.02)',
-                                    }}>
-                                        <div style={{ display: 'flex', gap: '6px', marginBottom: '18px' }}>
-                                            {['#ff5f57', '#febc2e', '#28c840'].map(c => (
-                                                <div key={c} style={{ width: '10px', height: '10px', borderRadius: '50%', background: c, opacity: 0.85 }} />
-                                            ))}
-                                        </div>
-                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '7px' }}>
-                                            <TagLine tag="stack" text="" delay={0.75} />
-                                            <div style={{ paddingLeft: '18px', display: 'flex', flexDirection: 'column', gap: '7px', borderLeft: `1px solid ${BONE_MUTED}`, margin: '2px 0 2px 10px' }}>
-                                                <TagLine tag="frontend" text="React + Vite" delay={0.85} />
-                                                <TagLine tag="language" text="TypeScript" delay={0.92} />
-                                                <TagLine tag="backend" text="Firebase" delay={0.99} />
-                                                <TagLine tag="database" text="Firestore" delay={1.06} />
-                                                <TagLine tag="ui" text="Tailwind + Motion" delay={1.13} />
-                                            </div>
-                                            <TagLine tag="stack" text="" delay={1.2} />
-                                        </div>
-                                    </div>
-
-                                    {/* Core Strengths */}
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                                        <div style={{ fontSize: '11px', fontWeight: 700, color: INK, opacity: 0.35, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '4px' }}>
-                                            {c.strengthsLabel}
-                                        </div>
-                                        {c.strengths.map((s, i) => (
-                                            <motion.div
-                                                key={s}
-                                                initial={{ opacity: 0, x: -10 }}
-                                                animate={{ opacity: 1, x: 0 }}
-                                                transition={{ delay: 0.8 + i * 0.08, duration: 0.45 }}
-                                                style={{
-                                                    display: 'flex', alignItems: 'center', gap: '12px',
-                                                    background: '#fff', border: `1px solid ${BORDER}`,
-                                                    borderRadius: '12px', padding: '12px 16px',
-                                                    fontSize: '13px', fontWeight: 600, color: INK,
-                                                }}
-                                            >
-                                                <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#f97316', flexShrink: 0 }} />
-                                                {s}
-                                            </motion.div>
+                                    }}
+                                >
+                                    <div style={{ display: 'flex', gap: '6px', marginBottom: '18px' }}>
+                                        {['#ff5f57', '#febc2e', '#28c840'].map(col => (
+                                            <div key={col} style={{ width: '10px', height: '10px', borderRadius: '50%', background: col, opacity: 0.85 }} />
                                         ))}
                                     </div>
-                                </div>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '7px' }}>
+                                        <TagLine tag="stack" text="" delay={0.75} />
+                                        <div style={{ paddingLeft: '18px', display: 'flex', flexDirection: 'column', gap: '7px', borderLeft: `1px solid ${BONE_MUTED}`, margin: '2px 0 2px 10px' }}>
+                                            <TagLine tag="frontend" text="React + Vite" delay={0.85} />
+                                            <TagLine tag="language" text="TypeScript" delay={0.92} />
+                                            <TagLine tag="backend" text="Firebase" delay={0.99} />
+                                            <TagLine tag="database" text="Firestore" delay={1.06} />
+                                            <TagLine tag="ui" text="Tailwind + Motion" delay={1.13} />
+                                        </div>
+                                        <TagLine tag="stack" text="" delay={1.2} />
+                                    </div>
+                                </motion.div>
 
                                 {/* ── Social Links ── */}
                                 <motion.div

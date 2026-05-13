@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAppStore } from '../store/useAppStore';
 import { motion } from 'framer-motion';
 import { useDark } from '../hooks/useDark';
+import { logoutUser } from '../lib/authService';
 
 
 const statusColor: Record<string, string> = {
@@ -31,6 +32,12 @@ const Dashboard = () => {
     const subText = isDark ? 'text-white/60' : 'text-black/60';
     const colHead = isDark ? 'text-white/30' : 'text-black/40';
 
+
+    const handleLogout = async () => {
+        await logoutUser();
+        logout();
+        navigate('/');
+    };
 
     const total = applications.length;
     const inProgress = applications.filter(a => a.status === 'Süreçte' || a.status === 'Görüşme Bekleniyor').length;
@@ -89,7 +96,7 @@ const Dashboard = () => {
                             </p>
                         </div>
                         <button
-                            onClick={logout}
+                            onClick={handleLogout}
                             className="self-start sm:self-auto flex-shrink-0 rounded-full bg-white/20 backdrop-blur-md border border-white/30 px-5 py-2.5 text-sm font-bold text-white transition-all hover:bg-white/30 hover:shadow-[0_4px_16px_rgba(255,255,255,0.2)]"
                         >
                             Çıkış Yap

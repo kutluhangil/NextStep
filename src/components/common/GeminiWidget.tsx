@@ -22,12 +22,15 @@ async function sendToGemini(messages: Message[], lang: string, appCount: number)
         ...messages.map(m => ({ role: m.role, parts: [{ text: m.text }] })),
     ];
 
-    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`, {
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ contents }),
     });
-    if (!res.ok) throw new Error(`API error ${res.status}`);
+    if (!res.ok) {
+        const errBody = await res.json().catch(() => ({}));
+        throw new Error(errBody?.error?.message ?? `API error ${res.status}`);
+    }
     const json = await res.json();
     return json.candidates?.[0]?.content?.parts?.[0]?.text ?? (lang === 'tr' ? 'Yanıt alınamadı.' : 'No response received.');
 }
@@ -60,8 +63,15 @@ export function GeminiWidget() {
         try {
             const reply = await sendToGemini(newMessages, lang, applications.length);
             setMessages(m => [...m, { role: 'model', text: reply }]);
-        } catch {
-            setMessages(m => [...m, { role: 'model', text: lang === 'tr' ? '❌ Bir hata oluştu. Tekrar deneyin.' : '❌ An error occurred. Please try again.' }]);
+        } catch (err) {
+            const msg = err instanceof Error ? err.message : '';
+            const isKeyErr = msg.toLowerCase().includes('api key') || msg.includes('400') || msg.includes('401') || msg.includes('403');
+            setMessages(m => [...m, {
+                role: 'model',
+                text: isKeyErr
+                    ? (lang === 'tr' ? '❌ Gemini API anahtarı geçersiz veya Generative Language API etkin değil. Google Cloud Console\'dan kontrol edin.' : '❌ Gemini API key is invalid or Generative Language API is not enabled. Check Google Cloud Console.')
+                    : (lang === 'tr' ? '❌ Bir hata oluştu. Tekrar deneyin.' : '❌ An error occurred. Please try again.'),
+            }]);
         } finally {
             setLoading(false);
         }
@@ -135,8 +145,12 @@ export function GeminiWidget() {
                                                 try {
                                                     const reply = await sendToGemini(newMessages, lang, applications.length);
                                                     setMessages(m => [...m, { role: 'model', text: reply }]);
-                                                } catch {
-                                                    setMessages(m => [...m, { role: 'model', text: lang === 'tr' ? '❌ Bir hata oluştu. Tekrar deneyin.' : '❌ An error occurred. Please try again.' }]);
+                                                } catch (err) {
+                                                    const msg = err instanceof Error ? err.message : '';
+                                                    const isKeyErr = msg.toLowerCase().includes('api key') || msg.includes('400') || msg.includes('401') || msg.includes('403');
+                                                    setMessages(m => [...m, { role: 'model', text: isKeyErr
+                                                        ? (lang === 'tr' ? '❌ Gemini API anahtarı geçersiz veya etkin değil.' : '❌ Gemini API key is invalid or not enabled.')
+                                                        : (lang === 'tr' ? '❌ Bir hata oluştu. Tekrar deneyin.' : '❌ An error occurred. Please try again.') }]);
                                                 } finally {
                                                     setLoading(false);
                                                 }

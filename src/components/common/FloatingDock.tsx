@@ -1,13 +1,17 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Link, useLocation } from 'react-router-dom';
-import { Home, PlusCircle, List, PieChart, Settings, FileText } from 'lucide-react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Home, PlusCircle, List, PieChart, Settings, FileText, LogOut } from 'lucide-react';
 import { useLanguage } from '../../lib/i18n';
+import { useAppStore } from '../../store/useAppStore';
+import { logoutUser } from '../../lib/authService';
 
 export function FloatingDock() {
     const [hovered, setHovered] = useState<string | null>(null);
     const location = useLocation();
+    const navigate = useNavigate();
     const { t } = useLanguage();
+    const logout = useAppStore(state => state.logout);
 
     const DOCK_ITEMS = [
         { id: 'home', label: t('nav.dashboard'), icon: Home, path: '/dashboard' },
@@ -17,6 +21,12 @@ export function FloatingDock() {
         { id: 'cv', label: t('nav.cv'), icon: FileText, path: '/cv' },
         { id: 'settings', label: t('nav.settings'), icon: Settings, path: '/settings' },
     ];
+
+    const handleLogout = async () => {
+        await logoutUser();
+        logout();
+        navigate('/');
+    };
 
     return (
         <motion.nav
@@ -38,7 +48,6 @@ export function FloatingDock() {
                         className="group relative flex items-center justify-center rounded-full p-2.5 sm:p-3 transition-colors duration-200 hover:bg-black/5 min-w-[44px] min-h-[44px]"
                         aria-label={item.label}
                     >
-                        {/* Active Indicator */}
                         {isActive && (
                             <motion.div
                                 layoutId="active-indicator"
@@ -47,7 +56,6 @@ export function FloatingDock() {
                             />
                         )}
 
-                        {/* Tooltip */}
                         <AnimatePresence>
                             {hovered === item.id && (
                                 <motion.div
@@ -63,10 +71,7 @@ export function FloatingDock() {
                         </AnimatePresence>
 
                         <motion.div
-                            animate={{
-                                scale: hovered === item.id ? 1.2 : 1,
-                                y: hovered === item.id ? -4 : 0,
-                            }}
+                            animate={{ scale: hovered === item.id ? 1.2 : 1, y: hovered === item.id ? -4 : 0 }}
                             transition={{ type: 'spring', bounce: 0.4, duration: 0.5 }}
                         >
                             <Icon
@@ -78,6 +83,35 @@ export function FloatingDock() {
                     </Link>
                 );
             })}
+
+            {/* Logout */}
+            <button
+                onMouseEnter={() => setHovered('logout')}
+                onMouseLeave={() => setHovered(null)}
+                onClick={handleLogout}
+                className="group relative flex items-center justify-center rounded-full p-2.5 sm:p-3 transition-colors duration-200 hover:bg-rose-50 min-w-[44px] min-h-[44px]"
+                aria-label={t('dashboard.logout')}
+            >
+                <AnimatePresence>
+                    {hovered === 'logout' && (
+                        <motion.div
+                            initial={{ opacity: 0, y: 10, scale: 0.9 }}
+                            animate={{ opacity: 1, y: -45, scale: 1 }}
+                            exit={{ opacity: 0, y: 10, scale: 0.9 }}
+                            transition={{ type: 'spring', bounce: 0, duration: 0.3 }}
+                            className="absolute -top-1 left-1/2 z-50 -translate-x-1/2 rounded-lg bg-black/80 px-3 py-1.5 text-xs font-medium text-white shadow-xl whitespace-nowrap pointer-events-none"
+                        >
+                            {t('dashboard.logout')}
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+                <motion.div
+                    animate={{ scale: hovered === 'logout' ? 1.2 : 1, y: hovered === 'logout' ? -4 : 0 }}
+                    transition={{ type: 'spring', bounce: 0.4, duration: 0.5 }}
+                >
+                    <LogOut size={21} className="transition-colors duration-300 text-gray-500 group-hover:text-rose-500" strokeWidth={2} />
+                </motion.div>
+            </button>
         </motion.nav>
     );
 }

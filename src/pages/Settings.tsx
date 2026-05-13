@@ -7,6 +7,7 @@ import emailjs from '@emailjs/browser';
 import { useLanguage } from '../lib/i18n';
 import { useDark } from '../hooks/useDark';
 import type { Theme } from '../store/useAppStore';
+import { logoutUser } from '../lib/authService';
 
 const fadeUp = (delay = 0) => ({
     initial: { opacity: 0, y: 16 },
@@ -87,7 +88,8 @@ const Settings = () => {
         }
     };
 
-    const handleLogout = () => {
+    const handleLogout = async () => {
+        await logoutUser();
         logout();
         navigate('/');
     };
@@ -300,10 +302,6 @@ const Settings = () => {
 
                         <SettingRow icon="⏰" title="Hareketsizlik Uyarısı" description="7 gün başvuru yoksa hatırlatma">
                             <Toggle checked={notifications.reminderInactive} onChange={() => { setNotifications({ reminderInactive: !notifications.reminderInactive }); toast('Tercih güncellendi'); }} />
-                        </SettingRow>
-
-                        <SettingRow icon="🎯" title="Teklif Bildirimi" description="Teklif alındığında özel hatırlatma">
-                            <Toggle checked={notifications.offerAlerts} onChange={() => { setNotifications({ offerAlerts: !notifications.offerAlerts }); toast('Tercih güncellendi'); }} />
                         </SettingRow>
 
                         <SettingRow icon="🔔" title="Tarayıcı Bildirimleri" description="Takip tarihi gelen başvurular için masaüstü bildirimi">

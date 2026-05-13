@@ -126,7 +126,7 @@ const FeatureShowcase = React.memo(({ bone2, border, ink, inkFaint, lang }: Show
     const prev = () => setActive(p => (p - 1 + total) % total);
 
     return (
-        <div className="dash-enter w-full" style={{ maxWidth: 760, margin: '5rem auto 0' }}>
+        <div className="dash-enter w-full" style={{ maxWidth: 760, margin: '3.5rem auto 0' }}>
             {/* ── Card stack ── */}
             <div className="relative select-none" style={{ height: 480, perspective: '1200px' }}>
                 {SCREENS.map((s, idx) => {
@@ -384,26 +384,26 @@ const LandingPage = () => {
                 </div>
             </section>
 
-            {/* ── STATS ─────────────────────────────────────────── */}
-            <section style={{ background: bone2, borderTop: `1px solid ${border}`, borderBottom: `1px solid ${border}` }} className="py-12 sm:py-16 px-5">
+            {/* ── STATS ── compact ────────────────────────────── */}
+            <section style={{ background: bone2, borderTop: `1px solid ${border}`, borderBottom: `1px solid ${border}` }} className="py-9 sm:py-11 px-5">
                 <div className="mx-auto max-w-[1100px]">
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 sm:gap-12">
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-8">
                         {[
                             { v: '∞', l: t('landing.statsUnlimited'), s: t('landing.statsUnlimitedSub') },
                             { v: '6', l: t('landing.statsWidgets'), s: t('landing.statsWidgetsSub') },
                             { v: '0', l: t('landing.statsServer'), s: t('landing.statsServerSub') },
                             { v: '%100', l: t('landing.statsFree'), s: t('landing.statsFreeSub') },
                         ].map((s, i) => (
-                            <Reveal key={s.l} delay={i * 0.08}>
+                            <Reveal key={s.l} delay={i * 0.07}>
                                 <div className="text-center">
-                                    <div className="text-3xl sm:text-4xl font-black tracking-tighter mb-1" style={{
+                                    <div className="text-2xl sm:text-3xl font-black tracking-tighter mb-0.5" style={{
                                         background: accent,
                                         WebkitBackgroundClip: 'text',
                                         WebkitTextFillColor: 'transparent',
                                         backgroundClip: 'text',
                                     }}>{s.v}</div>
-                                    <div className="text-sm font-bold" style={{ color: ink }}>{s.l}</div>
-                                    <div className="text-xs mt-0.5" style={{ color: inkFaint }}>{s.s}</div>
+                                    <div className="text-[13px] font-bold" style={{ color: ink }}>{s.l}</div>
+                                    <div className="text-[11px] mt-0.5" style={{ color: inkFaint }}>{s.s}</div>
                                 </div>
                             </Reveal>
                         ))}
@@ -411,26 +411,29 @@ const LandingPage = () => {
                 </div>
             </section>
 
-            {/* ── FEATURES ──────────────────────────────────────── */}
-            <section id="features" className="py-24 sm:py-32 px-5" style={{ background: bone }}>
+            {/* ── FEATURES ── compact + refined cards ─────────── */}
+            <section id="features" className="py-16 sm:py-20 px-5" style={{ background: bone }}>
                 <div className="mx-auto max-w-[1100px]">
                     <Reveal>
-                        <div className="text-center mb-16 sm:mb-20">
-                            <p className="text-xs font-bold uppercase tracking-[0.22em] mb-3" style={{ color: '#f97316' }}>{t('landing.featuresLabel')}</p>
-                            <h2 className="font-black tracking-[-0.03em] leading-tight mb-4" style={{ fontSize: 'clamp(28px,5vw,54px)', color: ink }}>
+                        <div className="text-center mb-10 sm:mb-14">
+                            <p className="text-[11px] font-bold uppercase tracking-[0.22em] mb-2.5" style={{ color: '#f97316' }}>{t('landing.featuresLabel')}</p>
+                            <h2 className="font-black tracking-[-0.03em] leading-tight mb-3" style={{ fontSize: 'clamp(26px,4.5vw,46px)', color: ink }}>
                                 {t('landing.featuresTitle')}
                             </h2>
-                            <p className="text-base max-w-xl mx-auto" style={{ color: inkMid }}>{t('landing.featuresSub')}</p>
+                            <p className="text-[15px] max-w-xl mx-auto" style={{ color: inkMid }}>{t('landing.featuresSub')}</p>
                         </div>
                     </Reveal>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                         {feats.map((f, i) => (
-                            <Reveal key={f.t} delay={i * 0.07}>
-                                <div className="rounded-2xl sm:rounded-3xl p-6 sm:p-8 h-full transition-all hover:-translate-y-1 hover:shadow-[0_8px_32px_rgba(0,0,0,0.08)] cursor-default"
+                            <Reveal key={f.t} delay={i * 0.06}>
+                                <div className="rounded-2xl p-5 sm:p-6 h-full transition-all hover:-translate-y-1 hover:shadow-[0_12px_32px_rgba(0,0,0,0.06)] cursor-default group"
                                     style={{ background: '#fff', border: `1px solid ${border}` }}>
-                                    <div className="text-3xl mb-4">{f.e}</div>
-                                    <h3 className="text-base font-bold mb-2" style={{ color: ink }}>{f.t}</h3>
-                                    <p className="text-sm leading-relaxed" style={{ color: inkMid }}>{f.d}</p>
+                                    <div className="w-11 h-11 rounded-xl flex items-center justify-center text-xl mb-3 transition-transform group-hover:scale-110"
+                                        style={{ background: bone2, border: `1px solid ${border}` }}>
+                                        {f.e}
+                                    </div>
+                                    <h3 className="text-[15px] font-bold mb-1.5" style={{ color: ink }}>{f.t}</h3>
+                                    <p className="text-[13px] leading-relaxed" style={{ color: inkMid }}>{f.d}</p>
                                 </div>
                             </Reveal>
                         ))}
@@ -438,65 +441,84 @@ const LandingPage = () => {
                 </div>
             </section>
 
-            {/* ── HOW IT WORKS ──────────────────────────────────── */}
-            <section id="how" style={{ background: bone2, borderTop: `1px solid ${border}`, borderBottom: `1px solid ${border}` }} className="py-24 sm:py-32 px-5">
+            {/* ── HOW IT WORKS ── compact ─────────────────────── */}
+            <section id="how" style={{ background: bone2, borderTop: `1px solid ${border}`, borderBottom: `1px solid ${border}` }} className="py-16 sm:py-20 px-5">
                 <div className="mx-auto max-w-[1100px]">
                     <Reveal>
-                        <div className="text-center mb-16 sm:mb-20">
-                            <p className="text-xs font-bold uppercase tracking-[0.22em] mb-3" style={{ color: '#14b8a6' }}>{t('landing.howLabel')}</p>
-                            <h2 className="font-black tracking-[-0.03em] leading-tight" style={{ fontSize: 'clamp(28px,5vw,54px)', color: ink }}>
+                        <div className="text-center mb-10 sm:mb-14">
+                            <p className="text-[11px] font-bold uppercase tracking-[0.22em] mb-2.5" style={{ color: '#14b8a6' }}>{t('landing.howLabel')}</p>
+                            <h2 className="font-black tracking-[-0.03em] leading-tight" style={{ fontSize: 'clamp(26px,4.5vw,46px)', color: ink }}>
                                 {t('landing.howTitle')}
                             </h2>
                         </div>
                     </Reveal>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                         {steps.map((s, i) => (
-                            <Reveal key={s.step} delay={i * 0.1}>
-                                <motion.div animate={activeStep === i ? { scale: 1.04, y: -6 } : { scale: 1, y: 0 }}
+                            <Reveal key={s.step} delay={i * 0.08}>
+                                <motion.div animate={activeStep === i ? { scale: 1.03, y: -4 } : { scale: 1, y: 0 }}
                                     transition={{ duration: 0.4 }}
-                                    className="rounded-2xl sm:rounded-3xl p-6 sm:p-8 h-full cursor-default transition-shadow"
+                                    className="rounded-2xl p-5 sm:p-6 h-full cursor-default transition-shadow"
                                     style={activeStep === i
                                         ? { background: accent as unknown as string, border: 'none', boxShadow: '0 12px 40px rgba(249,115,22,0.2)' }
                                         : { background: '#fff', border: `1px solid ${border}` }
                                     }>
-                                    <div className="text-4xl font-black mb-4" style={{ color: activeStep === i ? 'rgba(255,255,255,0.22)' : border }}>{s.step}</div>
-                                    <div className="text-base font-bold mb-2" style={{ color: activeStep === i ? '#fff' : ink }}>{s.title}</div>
-                                    <p className="text-sm leading-relaxed" style={{ color: activeStep === i ? 'rgba(255,255,255,0.75)' : inkMid }}>{s.desc}</p>
+                                    <div className="text-3xl font-black mb-3" style={{ color: activeStep === i ? 'rgba(255,255,255,0.22)' : border }}>{s.step}</div>
+                                    <div className="text-[15px] font-bold mb-1.5" style={{ color: activeStep === i ? '#fff' : ink }}>{s.title}</div>
+                                    <p className="text-[13px] leading-relaxed" style={{ color: activeStep === i ? 'rgba(255,255,255,0.78)' : inkMid }}>{s.desc}</p>
                                 </motion.div>
                             </Reveal>
                         ))}
                     </div>
-                    <div className="flex justify-center gap-2 mt-10">
+                    <div className="flex justify-center gap-2 mt-8">
                         {steps.map((_, i) => (
                             <button key={i} onClick={() => setActiveStep(i)}
                                 className="rounded-full transition-all"
-                                style={{ width: activeStep === i ? 28 : 8, height: 8, background: activeStep === i ? '#f97316' : border }} />
+                                style={{ width: activeStep === i ? 24 : 6, height: 6, background: activeStep === i ? '#f97316' : border }} />
                         ))}
                     </div>
                 </div>
             </section>
 
-            {/* ── CTA ───────────────────────────────────────────── */}
-            <section className="relative px-6 py-24 sm:py-36 overflow-hidden text-center"
-                style={{ background: 'linear-gradient(135deg, #f97316 0%, #ec4899 55%, #14b8a6 100%)' }}>
-                <div className="absolute inset-0 pointer-events-none" style={{ background: 'rgba(0,0,0,0.07)' }} />
-                <div className="absolute -top-24 -right-24 w-96 h-96 rounded-full pointer-events-none" style={{ background: 'rgba(255,255,255,0.07)' }} />
-                <div className="absolute -bottom-24 -left-24 w-96 h-96 rounded-full pointer-events-none" style={{ background: 'rgba(255,255,255,0.04)' }} />
+            {/* ── CTA ── Flowing multi-color gradient (matches dashboard greeting) ── */}
+            <section className="relative px-6 py-20 sm:py-28 overflow-hidden text-center"
+                style={{
+                    background: 'linear-gradient(135deg, #f97316 0%, #ec4899 30%, #14b8a6 60%, #6366f1 85%, #14b8a6 100%)',
+                    backgroundSize: '300% 300%',
+                    animation: 'gradientFlow 8s ease infinite',
+                }}>
+                {/* Glass overlay */}
+                <div className="absolute inset-0 pointer-events-none bg-white/10 backdrop-blur-[1px]" />
+                {/* Decorative circles */}
+                <div className="absolute -top-24 -right-24 w-96 h-96 rounded-full pointer-events-none" style={{ background: 'rgba(255,255,255,0.08)' }} />
+                <div className="absolute -bottom-24 -left-24 w-96 h-96 rounded-full pointer-events-none" style={{ background: 'rgba(255,255,255,0.05)' }} />
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full pointer-events-none" style={{ background: 'rgba(255,255,255,0.03)' }} />
+
                 <div className="relative z-10 mx-auto max-w-[640px]">
                     <Reveal>
-                        <h2 className="font-black leading-tight tracking-tight text-white mb-5" style={{ fontSize: 'clamp(28px,4.5vw,56px)' }}>
+                        <p className="text-[11px] font-bold tracking-[0.28em] text-white/75 uppercase mb-5">
+                            {lang === 'tr' ? '✨ HEMEN BAŞLA' : '✨ GET STARTED'}
+                        </p>
+                        <h2 className="font-black leading-[1.05] tracking-tight text-white mb-5 drop-shadow-sm" style={{ fontSize: 'clamp(30px,5vw,58px)' }}>
                             {t('landing.ctaTitle')}
                         </h2>
-                        <p className="mx-auto mb-12 max-w-md text-base sm:text-lg leading-relaxed" style={{ color: 'rgba(255,255,255,0.85)' }}>
+                        <p className="mx-auto mb-10 max-w-md text-[15px] sm:text-base leading-relaxed" style={{ color: 'rgba(255,255,255,0.88)' }}>
                             {t('landing.ctaSub')}
                         </p>
                         <button onClick={() => navigate('/login')}
-                            className="rounded-full bg-white px-14 py-4 text-base font-bold shadow-2xl transition-all hover:scale-[1.06] hover:-translate-y-1 active:scale-[0.98]"
+                            className="rounded-full bg-white/95 backdrop-blur-md px-12 py-3.5 text-[15px] font-bold shadow-[0_12px_40px_rgba(0,0,0,0.18)] transition-all hover:scale-[1.05] hover:-translate-y-1 hover:bg-white active:scale-[0.98]"
                             style={{ color: '#f97316' }}>
-                            {t('landing.ctaBtn')}
+                            {t('landing.ctaBtn')} →
                         </button>
                     </Reveal>
                 </div>
+
+                <style>{`
+                    @keyframes gradientFlow {
+                        0% { background-position: 0% 50%; }
+                        50% { background-position: 100% 50%; }
+                        100% { background-position: 0% 50%; }
+                    }
+                `}</style>
             </section>
 
             {/* ── FOOTER ────────────────────────────────────────── */}
