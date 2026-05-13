@@ -477,27 +477,24 @@ const LandingPage = () => {
             </section>
 
             {/* ── CTA ───────────────────────────────────────────── */}
-            <section className="px-4 sm:px-6 py-20 sm:py-28" style={{ background: bone }}>
-                <div className="mx-auto max-w-[960px]">
+            <section className="relative px-6 py-24 sm:py-36 overflow-hidden text-center"
+                style={{ background: 'linear-gradient(135deg, #f97316 0%, #ec4899 55%, #14b8a6 100%)' }}>
+                <div className="absolute inset-0 pointer-events-none" style={{ background: 'rgba(0,0,0,0.07)' }} />
+                <div className="absolute -top-24 -right-24 w-96 h-96 rounded-full pointer-events-none" style={{ background: 'rgba(255,255,255,0.07)' }} />
+                <div className="absolute -bottom-24 -left-24 w-96 h-96 rounded-full pointer-events-none" style={{ background: 'rgba(255,255,255,0.04)' }} />
+                <div className="relative z-10 mx-auto max-w-[640px]">
                     <Reveal>
-                        <div className="relative text-center rounded-[28px] sm:rounded-[40px] p-12 sm:p-20 overflow-hidden"
-                            style={{ background: accent as unknown as string, boxShadow: '0 24px 80px rgba(249,115,22,0.2)' }}>
-                            <div className="absolute inset-0 pointer-events-none" style={{ background: 'rgba(0,0,0,0.08)' }} />
-                            <div className="absolute -top-16 -right-16 w-56 h-56 rounded-full pointer-events-none" style={{ background: 'rgba(255,255,255,0.06)' }} />
-                            <div className="relative z-10">
-                                <h2 className="font-black leading-tight tracking-tight text-white mb-4" style={{ fontSize: 'clamp(24px,4vw,48px)' }}>
-                                    {t('landing.ctaTitle')}
-                                </h2>
-                                <p className="mx-auto mb-10 max-w-md text-base leading-relaxed" style={{ color: 'rgba(255,255,255,0.8)' }}>
-                                    {t('landing.ctaSub')}
-                                </p>
-                                <button onClick={() => navigate('/login')}
-                                    className="rounded-full bg-white px-12 py-4 text-base font-bold transition-all hover:scale-[1.05] hover:-translate-y-0.5"
-                                    style={{ color: '#f97316' }}>
-                                    {t('landing.ctaBtn')}
-                                </button>
-                            </div>
-                        </div>
+                        <h2 className="font-black leading-tight tracking-tight text-white mb-5" style={{ fontSize: 'clamp(28px,4.5vw,56px)' }}>
+                            {t('landing.ctaTitle')}
+                        </h2>
+                        <p className="mx-auto mb-12 max-w-md text-base sm:text-lg leading-relaxed" style={{ color: 'rgba(255,255,255,0.85)' }}>
+                            {t('landing.ctaSub')}
+                        </p>
+                        <button onClick={() => navigate('/login')}
+                            className="rounded-full bg-white px-14 py-4 text-base font-bold shadow-2xl transition-all hover:scale-[1.06] hover:-translate-y-1 active:scale-[0.98]"
+                            style={{ color: '#f97316' }}>
+                            {t('landing.ctaBtn')}
+                        </button>
                     </Reveal>
                 </div>
             </section>

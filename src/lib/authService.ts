@@ -27,6 +27,9 @@ export const loginUser = async (email: string, password: string) => {
 // ── Google Sign-In ───────────────────────────────────────────────
 export const loginWithGoogle = async () => {
     const provider = new GoogleAuthProvider();
+    provider.addScope('email');
+    provider.addScope('profile');
+    provider.setCustomParameters({ prompt: 'select_account' });
     const cred = await signInWithPopup(auth, provider);
     return cred.user;
 };
