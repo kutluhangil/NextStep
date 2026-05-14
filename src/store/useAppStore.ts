@@ -1,6 +1,14 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
+// Safe UUID — falls back for iOS Safari < 15.4 where crypto.randomUUID is missing
+const safeUUID = (): string => {
+    if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+        return crypto.randomUUID();
+    }
+    return 'id-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 11);
+};
+
 export type ApplicationStatus =
     | 'Süreçte'
     | 'Görüşme Bekleniyor'
@@ -118,7 +126,7 @@ export const useAppStore = create<AppState>()(
             addApplication: (appData: Omit<Application, 'id' | 'no' | 'createdAt'>) =>
                 set((state) => {
                     const newNo = state.applications.length > 0 ? Math.max(...state.applications.map(a => a.no)) + 1 : 1;
-                    const newApp: Application = { ...appData, id: crypto.randomUUID(), no: newNo, createdAt: Date.now() };
+                    const newApp: Application = { ...appData, id: safeUUID(), no: newNo, createdAt: Date.now() };
                     return { applications: [newApp, ...state.applications] };
                 }),
 

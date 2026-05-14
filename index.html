@@ -4,7 +4,15 @@
 <head>
   <meta charset="UTF-8" />
   <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#faf9f6" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#0d0d0f" media="(prefers-color-scheme: dark)" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="NextStep" />
+  <meta name="format-detection" content="telephone=no" />
+  <meta name="mobile-web-app-capable" content="yes" />
   <title>NextStep - İş Başvuru Takip Sistemi</title>
   <meta name="description"
     content="NextStep, iş başvuru süreçlerinizi takip etmenin en zarif ve güçlü yoludur. Excel tablolarını geride bırakın, başvurularınızı analiz edin." />
@@ -12,7 +20,27 @@
   <meta property="og:description"
     content="NextStep ile iş başvuru süreçlerinizi takip edin, verilerinizi analiz edin ve hedeflerinize ulaşın." />
   <meta property="og:type" content="website" />
-  <meta property="og:url" content="https://nextstep.app" />
+  <meta property="og:url" content="https://job-tracking-web-form.vercel.app" />
+  <style>
+    /* Prevent flash + ensure safe-area on iPhone notch */
+    html,
+    body {
+      background-color: #faf9f6;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+      -webkit-text-size-adjust: 100%;
+    }
+    body {
+      padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    }
+    /* Fallback for old Safari that doesn't understand 100dvh — show content */
+    @supports not (height: 100dvh) {
+      .min-h-\[100dvh\] {
+        min-height: 100vh !important;
+      }
+    }
+  </style>
 </head>
 
 <body>

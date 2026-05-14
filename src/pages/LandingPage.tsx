@@ -584,7 +584,8 @@ const LandingPage = () => {
             {/* ────────────────────────────────────────────────── */}
             {/* HERO — UNTOUCHED                                  */}
             {/* ────────────────────────────────────────────────── */}
-            <section ref={heroRef} className="relative min-h-[100dvh] flex flex-col items-center justify-center text-center px-5 overflow-hidden">
+            <section ref={heroRef} className="relative min-h-screen flex flex-col items-center justify-center text-center px-5 overflow-hidden"
+                style={{ minHeight: '100dvh' as React.CSSProperties['minHeight'] }}>
                 <div className="pointer-events-none absolute inset-0"
                     style={{ background: `radial-gradient(ellipse 70% 50% at 50% 40%, rgba(249,115,22,0.06) 0%, transparent 70%)` }} />
 

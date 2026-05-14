@@ -105,7 +105,7 @@ export function GeminiWidget() {
                         exit={{ opacity: 0, y: 24, scale: 0.95 }}
                         transition={{ type: 'spring', bounce: 0.2, duration: 0.45 }}
                         className="fixed bottom-48 right-4 sm:bottom-24 sm:right-6 z-40 w-[min(380px,calc(100vw-2rem))] flex flex-col rounded-3xl bg-white shadow-[0_24px_80px_rgba(0,0,0,0.18)] border border-black/5 overflow-hidden"
-                        style={{ height: 'min(560px, 70dvh)' }}
+                        style={{ height: 'min(560px, 70vh)' }}
                     >
                         {/* Header */}
                         <div className="flex items-center gap-3 px-5 py-4 border-b border-black/5" style={{ background: 'linear-gradient(135deg, #f97316, #ec4899, #14b8a6)', borderRadius: '24px 24px 0 0' }}>
