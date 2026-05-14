@@ -310,6 +310,10 @@ const Settings = () => {
                             ) : (
                                 <button
                                     onClick={async () => {
+                                        if (typeof Notification === 'undefined') {
+                                            toast('Bu tarayıcı bildirimleri desteklemiyor');
+                                            return;
+                                        }
                                         const perm = await Notification.requestPermission();
                                         toast(perm === 'granted' ? 'Bildirim izni verildi ✓' : 'Bildirim izni reddedildi');
                                     }}
