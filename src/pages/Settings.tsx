@@ -43,7 +43,7 @@ const Settings = () => {
     const isDark = useDark();
     const card = isDark ? 'bg-[#1c1c1e] border-white/5' : 'bg-white border-black/5';
     const titleColor = isDark ? 'text-white' : 'text-[#1d1d1f]';
-    const subColor = isDark ? 'text-white/40' : 'text-black/40';
+    const subColor = isDark ? 'text-white/70' : 'text-black/60';
     const inputBg = isDark ? 'bg-white/5 border-white/8 text-white/70' : 'bg-[#fafafa] border-black/8 text-black/70';
     const rowBorder = isDark ? 'border-white/5' : 'border-black/5';
 
@@ -349,7 +349,7 @@ const Settings = () => {
                         </SettingRow>
 
                         <SettingRow icon="📦" title="Depolama" description="Veriler Firebase Firestore ve yerel olarak saklanır">
-                            <span className={`text-xs font-bold px-3 py-1.5 rounded-full ${isDark ? 'text-white/40 bg-white/5' : 'text-black/40 bg-black/5'}`}>
+                            <span className={`text-xs font-bold px-3 py-1.5 rounded-full ${isDark ? 'text-white/70 bg-white/5' : 'text-black/60 bg-black/5'}`}>
                                 {applications.length} başvuru
                             </span>
                         </SettingRow>
@@ -366,20 +366,30 @@ const Settings = () => {
                         </div>
                         <div className="flex flex-col gap-3">
                             <div className="flex flex-col sm:flex-row gap-3">
-                                <div className="relative sm:w-44">
-                                    <select value={fbType} onChange={e => setFbType(e.target.value)}
-                                        className={`w-full rounded-xl border px-4 py-3 text-sm font-medium focus:outline-none appearance-none ${isDark ? 'bg-white/5 border-white/8 text-white' : 'bg-[#fafafa] border-black/8 text-black'}`}>
-                                        <option>Bug / Hata</option>
-                                        <option>Öneri</option>
-                                        <option>Diğer</option>
-                                    </select>
-                                    <div className={`pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 ${subColor}`}>
-                                        <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2.5 4.5L6 8L9.5 4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                                <div className="sm:w-44">
+                                    <label htmlFor="fb-type" className={`block text-xs font-bold uppercase tracking-wider mb-1.5 ${subColor}`}>
+                                        {t('settings.fbType')}
+                                    </label>
+                                    <div className="relative">
+                                        <select id="fb-type" value={fbType} onChange={e => setFbType(e.target.value)}
+                                            className={`w-full rounded-xl border px-4 py-3 text-sm font-medium focus:outline-none appearance-none ${isDark ? 'bg-white/5 border-white/8 text-white' : 'bg-[#fafafa] border-black/8 text-black'}`}>
+                                            <option>Bug / Hata</option>
+                                            <option>Öneri</option>
+                                            <option>Diğer</option>
+                                        </select>
+                                        <div className={`pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 ${subColor}`}>
+                                            <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2.5 4.5L6 8L9.5 4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                                        </div>
                                     </div>
                                 </div>
-                                <textarea value={fbMessage} onChange={e => setFbMessage(e.target.value)}
-                                    rows={3} placeholder={t('settings.fbMessage')}
-                                    className={`flex-1 rounded-xl border px-4 py-3 text-sm font-medium focus:outline-none resize-none ${isDark ? 'bg-white/5 border-white/8 text-white placeholder:text-white/30' : 'bg-[#fafafa] border-black/8 text-black placeholder:text-black/25'}`} />
+                                <div className="flex-1">
+                                    <label htmlFor="fb-message" className={`block text-xs font-bold uppercase tracking-wider mb-1.5 ${subColor}`}>
+                                        {t('settings.fbMessage')}
+                                    </label>
+                                    <textarea id="fb-message" value={fbMessage} onChange={e => setFbMessage(e.target.value)}
+                                        rows={3} placeholder="Buraya yazın..."
+                                        className={`w-full rounded-xl border px-4 py-3 text-sm font-medium focus:outline-none resize-none ${isDark ? 'bg-white/5 border-white/8 text-white placeholder:text-white/60' : 'bg-[#fafafa] border-black/8 text-black placeholder:text-black/45'}`} />
+                                </div>
                             </div>
                             <div className="flex items-center justify-between gap-3 flex-wrap">
                                 <p className={`text-xs ${subColor}`}>→ kutluhangul@windowslive.com</p>

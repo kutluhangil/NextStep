@@ -104,24 +104,24 @@ const Login = () => {
                         )}
 
                         <div>
-                            <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-black/40">E-posta</label>
+                            <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-black/60">E-posta</label>
                             <input type="email" value={email} onChange={(e) => setEmail(e.target.value)}
                                 autoComplete="email" inputMode="email"
                                 pattern="[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}"
                                 title="Geçerli bir e-posta adresi girin"
-                                className="w-full rounded-xl border border-black/8 bg-[#fafafa] px-4 py-3.5 text-base sm:text-sm font-medium text-black outline-none transition-all placeholder:text-black/25 focus:border-orange-300 focus:bg-white focus:ring-2 focus:ring-orange-400/20"
+                                className="w-full rounded-xl border border-black/8 bg-[#fafafa] px-4 py-3.5 text-base sm:text-sm font-medium text-black outline-none transition-all placeholder:text-black/45 focus:border-orange-300 focus:bg-white focus:ring-2 focus:ring-orange-400/20"
                                 placeholder="ornek@email.com" required />
                         </div>
 
                         <div>
-                            <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-black/40">Şifre</label>
+                            <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-black/60">Şifre</label>
                             <div className="relative">
                                 <input type={showPass ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)}
                                     autoComplete="current-password" minLength={6}
-                                    className="w-full rounded-xl border border-black/8 bg-[#fafafa] px-4 py-3.5 pr-12 text-base sm:text-sm font-medium text-black outline-none transition-all placeholder:text-black/25 focus:border-orange-300 focus:bg-white focus:ring-2 focus:ring-orange-400/20"
+                                    className="w-full rounded-xl border border-black/8 bg-[#fafafa] px-4 py-3.5 pr-12 text-base sm:text-sm font-medium text-black outline-none transition-all placeholder:text-black/45 focus:border-orange-300 focus:bg-white focus:ring-2 focus:ring-orange-400/20"
                                     placeholder="••••••••" required />
                                 <button type="button" onClick={() => setShowPass(p => !p)}
-                                    className="absolute right-4 top-1/2 -translate-y-1/2 text-black/30 hover:text-black/60 transition-colors" tabIndex={-1}>
+                                    className="absolute right-4 top-1/2 -translate-y-1/2 text-black/55 hover:text-black/60 transition-colors" tabIndex={-1}>
                                     {showPass
                                         ? <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94" /><path d="M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19" /><line x1="1" y1="1" x2="23" y2="23" /></svg>
                                         : <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" /></svg>
@@ -162,7 +162,7 @@ const Login = () => {
                             <div className="w-full border-t border-black/8" />
                         </div>
                         <div className="relative flex justify-center">
-                            <span className="bg-white px-3 text-xs text-black/40 font-medium">veya</span>
+                            <span className="bg-white px-3 text-xs text-black/60 font-medium">veya</span>
                         </div>
                     </div>
 
@@ -187,7 +187,7 @@ const Login = () => {
                         <Link to="/register" className="font-bold text-orange-600 hover:text-orange-700 transition-colors">Kayıt Ol</Link>
                     </div>
                 </div>
-                <p className="mt-5 text-center text-xs text-black/30 leading-relaxed">
+                <p className="mt-5 text-center text-xs text-black/55 leading-relaxed">
                     Giriş yaparak Gizlilik Politikası'nı kabul etmiş olursunuz.
                 </p>
             </motion.div>

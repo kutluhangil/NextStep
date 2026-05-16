@@ -127,7 +127,7 @@ export function GeminiWidget() {
                                     <p className="text-sm font-semibold text-black/70">
                                         {lang === 'tr' ? 'Merhaba! Nasıl yardımcı olabilirim?' : "Hi! How can I help you?"}
                                     </p>
-                                    <p className="text-xs text-black/40 mt-1">
+                                    <p className="text-xs text-black/60 mt-1">
                                         {lang === 'tr' ? 'CV, mülakat, kariyer tavsiyeleri...' : 'CV tips, interview prep, career advice...'}
                                     </p>
                                     <div className="mt-5 flex flex-col gap-2">

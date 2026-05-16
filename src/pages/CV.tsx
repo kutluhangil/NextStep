@@ -170,7 +170,7 @@ const CVPage = () => {
 
                 {/* Header */}
                 <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="mb-8 sm:mb-10">
-                    <p className="text-xs font-bold tracking-[0.18em] text-black/40 uppercase mb-2">CV</p>
+                    <p className="text-xs font-bold tracking-[0.18em] text-black/60 uppercase mb-2">CV</p>
                     <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-[#1d1d1f] mb-2">{t('cv.title')}</h1>
                     <p className="text-sm text-black/50">{t('cv.subtitle')}</p>
                 </motion.div>
@@ -196,13 +196,13 @@ const CVPage = () => {
                         <div className="flex flex-col items-center gap-2">
                             <div className="w-12 h-12 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-2xl">✅</div>
                             <p className="text-sm font-bold text-[#1d1d1f]">{fileName}</p>
-                            <p className="text-xs text-black/40">{lang === 'tr' ? 'Farklı dosya için tıklayın' : 'Click to change file'}</p>
+                            <p className="text-xs text-black/60">{lang === 'tr' ? 'Farklı dosya için tıklayın' : 'Click to change file'}</p>
                         </div>
                     ) : (
                         <div className="flex flex-col items-center gap-3">
                             <div className="w-14 h-14 rounded-2xl bg-black/5 flex items-center justify-center text-3xl group-hover:scale-110 transition-transform">📄</div>
                             <p className="text-base font-semibold text-[#1d1d1f]">{t('cv.dropzone')}</p>
-                            <p className="text-xs text-black/40">PDF • Maks. 10MB</p>
+                            <p className="text-xs text-black/60">PDF • Maks. 10MB</p>
                         </div>
                     )}
                 </motion.div>
@@ -270,7 +270,7 @@ const CVPage = () => {
                                             <details key={section} className="group rounded-2xl bg-[#fafafa] border border-black/5 overflow-hidden">
                                                 <summary className="flex justify-between items-center px-5 py-4 cursor-pointer font-semibold text-sm text-[#1d1d1f] list-none">
                                                     {section || 'Genel'}
-                                                    <svg className="w-4 h-4 text-black/40 group-open:rotate-180 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
+                                                    <svg className="w-4 h-4 text-black/60 group-open:rotate-180 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
                                                 </summary>
                                                 <pre className="px-5 pb-4 text-xs text-black/60 leading-relaxed whitespace-pre-wrap font-sans">{content.trim()}</pre>
                                             </details>
@@ -287,7 +287,7 @@ const CVPage = () => {
                                     </div>
                                     <div>
                                         <h3 className="text-base font-bold text-[#1d1d1f]">{t('cv.askGemini')}</h3>
-                                        <p className="text-xs text-black/40">{lang === 'tr' ? 'CV hakkında Gemini\'ye soru sorun' : 'Ask Gemini about your CV'}</p>
+                                        <p className="text-xs text-black/60">{lang === 'tr' ? 'CV hakkında Gemini\'ye soru sorun' : 'Ask Gemini about your CV'}</p>
                                     </div>
                                 </div>
                                 <div className="flex flex-col sm:flex-row gap-3">

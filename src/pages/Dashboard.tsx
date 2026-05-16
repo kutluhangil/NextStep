@@ -30,9 +30,9 @@ const Dashboard = () => {
     const card = isDark ? 'bg-[#1c1c1e] border-white/5 text-white' : 'bg-white border-black/5 text-[#1d1d1f]';
     const rowHover = isDark ? 'hover:bg-white/[0.03]' : 'hover:bg-[#fafafe]';
     const divider = isDark ? 'divide-white/5' : 'divide-black/5';
-    const mutedText = isDark ? 'text-white/40' : 'text-black/40';
+    const mutedText = isDark ? 'text-white/70' : 'text-black/60';
     const subText = isDark ? 'text-white/60' : 'text-black/60';
-    const colHead = isDark ? 'text-white/30' : 'text-black/40';
+    const colHead = isDark ? 'text-white/60' : 'text-black/60';
 
 
     const handleLogout = async () => {
@@ -193,12 +193,12 @@ const Dashboard = () => {
                                         <div className={`flex items-center text-sm ${subText}`}>
                                             {app.motivation ? (
                                                 <span className="text-emerald-600 font-semibold">✓ Eklendi</span>
-                                            ) : <span className="text-black/30">—</span>}
+                                            ) : <span className="text-black/55">—</span>}
                                         </div>
                                         <div className="flex items-center text-sm">
                                             {app.testLink ? (
                                                 <a href={app.testLink} target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:underline font-semibold" onClick={e => e.stopPropagation()}>Var</a>
-                                            ) : <span className="text-black/30">—</span>}
+                                            ) : <span className="text-black/55">—</span>}
                                         </div>
                                         <div className="flex items-center">
                                             {app.jobLink ? (
@@ -211,7 +211,7 @@ const Dashboard = () => {
                                                 >
                                                     İlanı Aç
                                                 </a>
-                                            ) : <span className="text-black/30">—</span>}
+                                            ) : <span className="text-black/55">—</span>}
                                         </div>
                                     </motion.div>
                                 ))}

@@ -25,10 +25,30 @@ const SectionCard = ({ title, icon, children, delay = 0, isDark }: {
     </motion.div>
 );
 
-const Field = ({ label, children, full = false, isDark }: { label: string; children: React.ReactNode; full?: boolean; isDark: boolean }) => (
+const Field = ({ label, children, full = false, isDark, required = false, error }: {
+    label: string;
+    children: React.ReactNode;
+    full?: boolean;
+    isDark: boolean;
+    required?: boolean;
+    error?: string;
+}) => (
     <div className={`space-y-1.5 ${full ? 'sm:col-span-2' : ''}`}>
-        <label className={`text-xs font-bold uppercase tracking-wider ${isDark ? 'text-white/40' : 'text-black/40'}`}>{label}</label>
-        {children}
+        <label className={`text-xs font-bold uppercase tracking-wider ${isDark ? 'text-white/70' : 'text-black/60'}`}>
+            {label}
+            {required && <span className="text-rose-500 ml-1" aria-hidden="true">*</span>}
+        </label>
+        <div className={error ? '[&_input]:border-rose-400 [&_input]:bg-rose-50/30 [&_textarea]:border-rose-400 [&_textarea]:bg-rose-50/30' : ''}>
+            {children}
+        </div>
+        {error && (
+            <p className="text-xs font-semibold text-rose-600 flex items-center gap-1" role="alert">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" />
+                </svg>
+                {error}
+            </p>
+        )}
     </div>
 );
 
@@ -43,7 +63,7 @@ const SelectWrap = ({ name, value, onChange, options, iCls, isDark }: {
         <select name={name} value={value} onChange={onChange} className={iCls}>
             {options.map(o => <option key={o} value={o}>{o}</option>)}
         </select>
-        <div className={`pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 ${isDark ? 'text-white/30' : 'text-black/30'}`}>
+        <div className={`pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 ${isDark ? 'text-white/60' : 'text-black/55'}`}>
             <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2.5 4.5L6 8L9.5 4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
         </div>
     </div>
@@ -56,11 +76,12 @@ const AddApplication = () => {
     const { t } = useLanguage();
     const [showToast, setShowToast] = useState(false);
     const [submitting, setSubmitting] = useState(false);
+    const [errors, setErrors] = useState<Record<string, string>>({});
     const isDark = useDark();
 
     const iCls = isDark
-        ? "w-full rounded-xl border border-white/8 bg-white/5 px-4 py-3 text-sm font-medium text-white transition-all placeholder:text-white/25 focus:outline-none focus:ring-2 focus:ring-orange-400/30 focus:border-orange-300"
-        : "w-full rounded-xl border border-black/8 bg-[#fafafa] px-4 py-3 text-sm font-medium text-black transition-all placeholder:text-black/25 focus:outline-none focus:ring-2 focus:ring-orange-400/30 focus:border-orange-300";
+        ? "w-full rounded-xl border border-white/8 bg-white/5 px-4 py-3 text-sm font-medium text-white transition-all placeholder:text-white/45 focus:outline-none focus:ring-2 focus:ring-orange-400/30 focus:border-orange-300"
+        : "w-full rounded-xl border border-black/8 bg-[#fafafa] px-4 py-3 text-sm font-medium text-black transition-all placeholder:text-black/45 focus:outline-none focus:ring-2 focus:ring-orange-400/30 focus:border-orange-300";
 
     const [form, setForm] = useState<Partial<Application>>({
         companyName: '',
@@ -93,22 +114,49 @@ const AddApplication = () => {
         tags: '',
     });
 
-    const hc = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
-        setForm(p => ({ ...p, [e.target.name]: e.target.value }));
+    const hc = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+        const { name, value } = e.target;
+        setForm(p => ({ ...p, [name]: value }));
+        // Clear error for this field as the user starts typing
+        if (errors[name]) setErrors(prev => { const next = { ...prev }; delete next[name]; return next; });
+    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (submitting) return;
-        // Trim all string fields before validating to block whitespace-only submissions
+        // Trim all string fields
         const trimmed: Partial<Application> = {};
         (Object.keys(form) as (keyof Application)[]).forEach((k) => {
             const v = form[k];
             (trimmed as Record<string, unknown>)[k] = typeof v === 'string' ? v.trim() : v;
         });
-        if (!trimmed.companyName || !trimmed.position) {
-            alert('Firma adı ve pozisyon zorunludur.');
+
+        // Inline per-field validation
+        const newErrors: Record<string, string> = {};
+        if (!trimmed.companyName) newErrors.companyName = 'Bu alan zorunludur';
+        if (!trimmed.position) newErrors.position = 'Bu alan zorunludur';
+        if (!trimmed.date) newErrors.date = 'Tarih seçmelisiniz';
+        if (trimmed.hrEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed.hrEmail)) {
+            newErrors.hrEmail = 'Geçerli bir e-posta adresi girin';
+        }
+        if (trimmed.salaryMin && trimmed.salaryMax) {
+            const min = parseFloat(String(trimmed.salaryMin).replace(/\./g, ''));
+            const max = parseFloat(String(trimmed.salaryMax).replace(/\./g, ''));
+            if (!isNaN(min) && !isNaN(max) && min > max) {
+                newErrors.salaryMax = 'Maksimum, minimumdan büyük olmalı';
+            }
+        }
+
+        if (Object.keys(newErrors).length > 0) {
+            setErrors(newErrors);
+            // Scroll to first error
+            const firstErrorKey = Object.keys(newErrors)[0];
+            const el = document.querySelector(`[name="${firstErrorKey}"]`) as HTMLElement | null;
+            if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); setTimeout(() => el.focus(), 300); }
             return;
         }
+
+        setErrors({});
         setSubmitting(true);
         try {
             await addApplicationAsync(trimmed as Omit<Application, 'id' | 'no' | 'createdAt'>);
@@ -128,7 +176,7 @@ const AddApplication = () => {
             <div className="mx-auto max-w-[860px] px-4 sm:px-6 pt-20 sm:pt-24 pb-32">
 
                 <motion.div {...fd(0)} className="mb-8 sm:mb-10">
-                    <p className={`text-xs font-bold tracking-[0.18em] uppercase mb-2 ${isDark ? 'text-white/40' : 'text-black/40'}`}>{t('add.title')}</p>
+                    <p className={`text-xs font-bold tracking-[0.18em] uppercase mb-2 ${isDark ? 'text-white/70' : 'text-black/60'}`}>{t('add.title')}</p>
                     <h1 className={`text-3xl sm:text-4xl font-bold tracking-tight mb-2 ${isDark ? 'text-white' : 'text-[#1d1d1f]'}`}>{t('add.title')}</h1>
                     <p className={`text-sm ${isDark ? 'text-white/50' : 'text-black/50'}`}>{t('add.subtitle')}</p>
                 </motion.div>
@@ -137,20 +185,25 @@ const AddApplication = () => {
 
                     {/* ── 1. Temel Bilgiler ─────────────────────────────── */}
                     <SectionCard title={t('add.section.core')} icon="🏢" delay={0.08} isDark={isDark}>
-                        <Field label={t('add.company')} isDark={isDark}>
-                            <input name="companyName" type="text" value={form.companyName} onChange={hc} required placeholder="Apple" className={iCls} />
+                        <Field label={t('add.company')} isDark={isDark} required error={errors.companyName}>
+                            <input name="companyName" type="text" value={form.companyName} onChange={hc} aria-required="true"
+                                aria-invalid={!!errors.companyName}
+                                placeholder="Örn: Apple" className={iCls} />
                         </Field>
-                        <Field label={t('add.position')} isDark={isDark}>
-                            <input name="position" type="text" value={form.position} onChange={hc} required placeholder="Frontend Developer" className={iCls} />
+                        <Field label={t('add.position')} isDark={isDark} required error={errors.position}>
+                            <input name="position" type="text" value={form.position} onChange={hc} aria-required="true"
+                                aria-invalid={!!errors.position}
+                                placeholder="Örn: Frontend Developer" className={iCls} />
                         </Field>
                         <Field label="Departman" isDark={isDark}>
-                            <input name="department" type="text" value={form.department ?? ''} onChange={hc} placeholder="Mühendislik" className={iCls} />
+                            <input name="department" type="text" value={form.department ?? ''} onChange={hc} placeholder="Örn: Mühendislik" className={iCls} />
                         </Field>
                         <Field label="Öncelik" isDark={isDark}>
                             <SelectWrap name="priority" value={form.priority ?? 'Orta'} onChange={hc} options={['Düşük', 'Orta', 'Yüksek']} iCls={iCls} isDark={isDark} />
                         </Field>
-                        <Field label={t('add.date')} isDark={isDark}>
-                            <input name="date" type="date" value={form.date} onChange={hc} required className={iCls} />
+                        <Field label={t('add.date')} isDark={isDark} required error={errors.date}>
+                            <input name="date" type="date" value={form.date} onChange={hc} aria-required="true"
+                                aria-invalid={!!errors.date} className={iCls} />
                         </Field>
                         <Field label={t('add.status')} isDark={isDark}>
                             <SelectWrap name="status" value={form.status} onChange={hc} options={statusOptions} iCls={iCls} isDark={isDark} />
@@ -165,8 +218,11 @@ const AddApplication = () => {
                         <Field label="Min. Maaş" isDark={isDark}>
                             <input name="salaryMin" type="text" inputMode="numeric" pattern="[0-9.]*" value={form.salaryMin ?? ''} onChange={(e) => setForm(p => ({ ...p, salaryMin: e.target.value.replace(/[^0-9.]/g, '') }))} placeholder="30.000" className={iCls} />
                         </Field>
-                        <Field label="Max. Maaş" isDark={isDark}>
-                            <input name="salaryMax" type="text" inputMode="numeric" pattern="[0-9.]*" value={form.salaryMax ?? ''} onChange={(e) => setForm(p => ({ ...p, salaryMax: e.target.value.replace(/[^0-9.]/g, '') }))} placeholder="50.000" className={iCls} />
+                        <Field label="Max. Maaş" isDark={isDark} error={errors.salaryMax}>
+                            <input name="salaryMax" type="text" inputMode="numeric" pattern="[0-9.]*" value={form.salaryMax ?? ''}
+                                aria-invalid={!!errors.salaryMax}
+                                onChange={(e) => { setForm(p => ({ ...p, salaryMax: e.target.value.replace(/[^0-9.]/g, '') })); if (errors.salaryMax) setErrors(prev => { const n = { ...prev }; delete n.salaryMax; return n; }); }}
+                                placeholder="50.000" className={iCls} />
                         </Field>
                         <Field label="Para Birimi" isDark={isDark}>
                             <SelectWrap name="salaryCurrency" value={form.salaryCurrency ?? 'TRY'} onChange={hc} options={['TRY', 'USD', 'EUR', 'GBP']} iCls={iCls} isDark={isDark} />
@@ -220,8 +276,10 @@ const AddApplication = () => {
                         <Field label="İK Uzmanı Adı" isDark={isDark}>
                             <input name="hrName" type="text" value={form.hrName ?? ''} onChange={hc} placeholder="Ad Soyad" className={iCls} />
                         </Field>
-                        <Field label="İK E-posta" isDark={isDark}>
-                            <input name="hrEmail" type="email" value={form.hrEmail ?? ''} onChange={hc} placeholder="ik@firma.com" className={iCls} />
+                        <Field label="İK E-posta" isDark={isDark} error={errors.hrEmail}>
+                            <input name="hrEmail" type="email" value={form.hrEmail ?? ''} onChange={hc}
+                                aria-invalid={!!errors.hrEmail}
+                                placeholder="ik@firma.com" className={iCls} />
                         </Field>
                         <Field label={t('add.afterApply')} full isDark={isDark}>
                             <textarea name="notes" value={form.notes} onChange={hc} rows={3} placeholder="Başvurudan sonra ne oldu? Geri dönüş geldi mi?"

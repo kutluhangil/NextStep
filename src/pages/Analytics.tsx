@@ -30,7 +30,7 @@ const Widget = ({ children, className = '', delay = 0, isDark }: { children: Rea
 const WidgetHeader = ({ icon, label, color, isDark }: { icon: string; label: string; color: string; isDark?: boolean }) => (
     <div className="flex items-center gap-3 mb-4">
         <div className={`w-9 h-9 rounded-2xl flex items-center justify-center text-base ${color}`}>{icon}</div>
-        <span className={`text-xs font-bold tracking-[0.15em] uppercase ${isDark ? 'text-white/40' : 'text-black/40'}`}>{label}</span>
+        <span className={`text-xs font-bold tracking-[0.15em] uppercase ${isDark ? 'text-white/70' : 'text-black/60'}`}>{label}</span>
     </div>
 );
 
@@ -137,7 +137,7 @@ const Analytics = () => {
 
                 {/* Header */}
                 <motion.div {...fadeUp(0)} className="mb-10">
-                    <p className={`text-xs font-bold tracking-[0.18em] uppercase mb-2 ${isDark ? 'text-white/40' : 'text-black/40'}`}>İçgörüler</p>
+                    <p className={`text-xs font-bold tracking-[0.18em] uppercase mb-2 ${isDark ? 'text-white/70' : 'text-black/60'}`}>İçgörüler</p>
                     <h1 className={`text-4xl sm:text-5xl font-bold tracking-tight mb-3 ${isDark ? 'text-white' : 'text-[#1d1d1f]'}`}>Analiz</h1>
                     <p className={`text-base max-w-lg leading-relaxed ${isDark ? 'text-white/50' : 'text-black/50'}`}>
                         Başvurularınızın mülakate dönüşme oranını ve kalite trendlerini widget görünümleriyle izleyin.
@@ -208,7 +208,7 @@ const Analytics = () => {
                     <Widget className="col-span-12 md:col-span-5 p-7" delay={0.15} isDark={isDark}>
                         <WidgetHeader icon="🥧" label="Durum Dağılımı" color="bg-indigo-50 text-indigo-600" isDark={isDark} />
                         {applications.length === 0 ? (
-                            <div className={`flex items-center justify-center h-40 text-sm ${isDark ? 'text-white/30' : 'text-black/30'}`}>Veri yok</div>
+                            <div className={`flex items-center justify-center h-40 text-sm ${isDark ? 'text-white/60' : 'text-black/55'}`}>Veri yok</div>
                         ) : (
                             <div className="flex gap-4 items-center">
                                 <div className="w-36 h-36 flex-shrink-0">
@@ -240,7 +240,7 @@ const Analytics = () => {
                     <Widget className="col-span-12 md:col-span-7 p-7" delay={0.2} isDark={isDark}>
                         <WidgetHeader icon="📄" label="CV Performans" color="bg-orange-50 text-orange-600" isDark={isDark} />
                         {cvData.length === 0 ? (
-                            <div className={`flex items-center justify-center h-40 text-sm ${isDark ? 'text-white/30' : 'text-black/30'}`}>Veri yok</div>
+                            <div className={`flex items-center justify-center h-40 text-sm ${isDark ? 'text-white/60' : 'text-black/55'}`}>Veri yok</div>
                         ) : (
                             <div className="flex flex-col gap-4 mt-2">
                                 {cvData.map((cv, i) => (
@@ -319,7 +319,7 @@ const Analytics = () => {
                     <Widget className="col-span-12 md:col-span-4 p-7" delay={0.35} isDark={isDark}>
                         <WidgetHeader icon="🔗" label="Platform Karşılaştırması" color="bg-teal-50 text-teal-600" isDark={isDark} />
                         {platformData.length === 0 ? (
-                            <div className={`flex items-center justify-center h-40 text-sm ${isDark ? 'text-white/30' : 'text-black/30'}`}>Veri yok</div>
+                            <div className={`flex items-center justify-center h-40 text-sm ${isDark ? 'text-white/60' : 'text-black/55'}`}>Veri yok</div>
                         ) : (
                             <div className="h-44">
                                 <ResponsiveContainer width="100%" height="100%">
@@ -368,7 +368,7 @@ const Analytics = () => {
                     {/* Widget 9: Heatmap — col 4 */}
                     <Widget className="col-span-12 md:col-span-4 p-7" delay={0.45} isDark={isDark}>
                         <WidgetHeader icon="🔥" label="Başvuru Yoğunluğu" color="bg-rose-50 text-rose-600" isDark={isDark} />
-                        <p className={`text-xs mb-5 ${isDark ? 'text-white/40' : 'text-black/40'}`}>Haftanın hangi günleri daha çok başvuruyorsunuz?</p>
+                        <p className={`text-xs mb-5 ${isDark ? 'text-white/70' : 'text-black/60'}`}>Haftanın hangi günleri daha çok başvuruyorsunuz?</p>
                         <div className="grid grid-cols-7 gap-2">
                             {heatmapData.map(d => (
                                 <div key={d.day} className="flex flex-col items-center gap-1.5">
@@ -381,18 +381,18 @@ const Analytics = () => {
                                         }}
                                         title={`${d.day}: ${d.count} başvuru`}
                                     />
-                                    <span className={`text-[10px] font-medium ${isDark ? 'text-white/40' : 'text-black/40'}`}>{d.day}</span>
+                                    <span className={`text-[10px] font-medium ${isDark ? 'text-white/70' : 'text-black/60'}`}>{d.day}</span>
                                 </div>
                             ))}
                         </div>
                         <div className="flex justify-between mt-4">
-                            <span className={`text-xs ${isDark ? 'text-white/30' : 'text-black/30'}`}>Az</span>
+                            <span className={`text-xs ${isDark ? 'text-white/60' : 'text-black/55'}`}>Az</span>
                             <div className="flex gap-1">
                                 {[0.1, 0.3, 0.55, 0.75, 1].map((v, i) => (
                                     <div key={i} className="w-4 h-2 rounded-sm" style={{ background: `rgba(79,70,229,${v})` }} />
                                 ))}
                             </div>
-                            <span className={`text-xs ${isDark ? 'text-white/30' : 'text-black/30'}`}>Çok</span>
+                            <span className={`text-xs ${isDark ? 'text-white/60' : 'text-black/55'}`}>Çok</span>
                         </div>
                     </Widget>
 
@@ -420,9 +420,9 @@ const Analytics = () => {
                                         </motion.div>
                                         <div className="text-center">
                                             <div className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-[#1d1d1f]'}`}>{stage.count}</div>
-                                            <div className={`text-xs font-semibold uppercase tracking-wide mt-0.5 ${isDark ? 'text-white/40' : 'text-black/40'}`}>{stage.label}</div>
+                                            <div className={`text-xs font-semibold uppercase tracking-wide mt-0.5 ${isDark ? 'text-white/70' : 'text-black/60'}`}>{stage.label}</div>
                                             {i > 0 && funnel[i - 1].count > 0 && (
-                                                <div className={`text-xs mt-0.5 ${isDark ? 'text-white/30' : 'text-black/30'}`}>
+                                                <div className={`text-xs mt-0.5 ${isDark ? 'text-white/60' : 'text-black/55'}`}>
                                                     %{Math.round((stage.count / funnel[i - 1].count) * 100)}
                                                 </div>
                                             )}

@@ -52,8 +52,8 @@ interface KanbanProps {
 const KanbanBoard = ({ apps, onSelect, onEdit, onDelete, isDark }: KanbanProps) => {
     const colBg = isDark ? 'bg-white/[0.03] border-white/5' : 'bg-black/[0.02] border-black/5';
     const cardBg = isDark ? 'bg-[#1c1c1e] border-white/5 hover:border-white/10' : 'bg-white border-black/5 hover:border-black/10 hover:shadow-md';
-    const subText = isDark ? 'text-white/50' : 'text-black/40';
-    const headText = isDark ? 'text-white/30' : 'text-black/30';
+    const subText = isDark ? 'text-white/50' : 'text-black/60';
+    const headText = isDark ? 'text-white/60' : 'text-black/55';
 
     return (
         <div className="overflow-x-auto pb-4">
@@ -95,14 +95,14 @@ const KanbanBoard = ({ apps, onSelect, onEdit, onDelete, isDark }: KanbanProps) 
                                                 <div className="flex gap-1">
                                                     <button
                                                         onClick={e => { e.stopPropagation(); onEdit(app); }}
-                                                        className="p-1 rounded-lg hover:bg-indigo-50 hover:text-indigo-600 transition-colors text-black/30"
+                                                        className="p-1 rounded-lg hover:bg-indigo-50 hover:text-indigo-600 transition-colors text-black/55"
                                                         title="Düzenle"
                                                     >
                                                         <Pencil size={11} />
                                                     </button>
                                                     <button
                                                         onClick={e => { e.stopPropagation(); onDelete(app.id); }}
-                                                        className="p-1 rounded-lg hover:bg-red-50 hover:text-red-500 transition-colors text-black/30"
+                                                        className="p-1 rounded-lg hover:bg-red-50 hover:text-red-500 transition-colors text-black/55"
                                                         title="Sil"
                                                     >
                                                         <Trash2 size={11} />
@@ -157,14 +157,14 @@ const Applications = () => {
     const isDark = useDark();
     const importRef = useRef<HTMLInputElement>(null);
 
-    const inputDark = isDark ? 'border-white/10 bg-white/5 text-white placeholder:text-white/30' : 'border-black/10 bg-[#fbfbfd]';
+    const inputDark = isDark ? 'border-white/10 bg-white/5 text-white placeholder:text-white/60' : 'border-black/10 bg-[#fbfbfd]';
     const rowCls = isDark
         ? 'bg-white/5 border-white/5 hover:bg-white/10'
         : 'bg-white/60 border-black/5 hover:bg-white hover:shadow-md';
     const subText = isDark ? 'text-white/60' : 'text-black/60';
     const modalBg = isDark ? 'bg-[#1c1c1e]' : 'bg-white';
     const modalText = isDark ? 'text-white' : 'text-black';
-    const modalSub = isDark ? 'text-white/40' : 'text-black/40';
+    const modalSub = isDark ? 'text-white/70' : 'text-black/60';
 
     const handleSort = (field: 'date' | 'companyName') => {
         if (sortField === field) {
@@ -320,13 +320,13 @@ const Applications = () => {
                         <div className={`flex rounded-full border p-1 gap-0.5 ${isDark ? 'border-white/10 bg-white/5' : 'border-black/10 bg-black/5'}`}>
                             <button
                                 onClick={() => setViewMode('list')}
-                                className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold transition-all ${viewMode === 'list' ? 'bg-white text-black shadow-sm' : isDark ? 'text-white/50' : 'text-black/40'}`}
+                                className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold transition-all ${viewMode === 'list' ? 'bg-white text-black shadow-sm' : isDark ? 'text-white/50' : 'text-black/60'}`}
                             >
                                 <List size={13} /> Liste
                             </button>
                             <button
                                 onClick={() => setViewMode('kanban')}
-                                className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold transition-all ${viewMode === 'kanban' ? 'bg-white text-black shadow-sm' : isDark ? 'text-white/50' : 'text-black/40'}`}
+                                className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold transition-all ${viewMode === 'kanban' ? 'bg-white text-black shadow-sm' : isDark ? 'text-white/50' : 'text-black/60'}`}
                             >
                                 <LayoutGrid size={13} /> Kanban
                             </button>
@@ -335,29 +335,32 @@ const Applications = () => {
                         {/* Search */}
                         <div className="relative">
                             <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
-                                <Search size={16} className={isDark ? 'text-white/40' : 'text-black/40'} />
+                                <Search size={16} className={isDark ? 'text-white/70' : 'text-black/60'} />
                             </div>
                             <input type="text" value={searchTerm} onChange={e => setSearchTerm(e.target.value)}
                                 placeholder="Firma veya pozisyon..."
+                                aria-label="Başvurularda firma, pozisyon, departman ile arama yap"
                                 className={`w-full sm:w-52 rounded-full border py-2.5 pl-10 pr-4 text-sm transition-all ${inputDark}`} />
                         </div>
 
                         {/* Tag Filter */}
                         <div className="relative">
                             <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
-                                <Tag size={14} className={isDark ? 'text-white/40' : 'text-black/40'} />
+                                <Tag size={14} className={isDark ? 'text-white/70' : 'text-black/60'} />
                             </div>
                             <input type="text" value={tagFilter} onChange={e => setTagFilter(e.target.value)}
                                 placeholder="Etiket..."
+                                aria-label="Etikete göre filtrele"
                                 className={`w-full sm:w-36 rounded-full border py-2.5 pl-10 pr-4 text-sm transition-all ${inputDark}`} />
                         </div>
 
                         {/* Status Filter */}
                         <div className="relative">
                             <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
-                                <Filter size={14} className={isDark ? 'text-white/40' : 'text-black/40'} />
+                                <Filter size={14} className={isDark ? 'text-white/70' : 'text-black/60'} />
                             </div>
                             <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)}
+                                aria-label="Duruma göre filtrele"
                                 className={`w-full sm:w-44 appearance-none rounded-full border py-2.5 pl-10 pr-8 text-sm transition-all ${inputDark}`}>
                                 <option value="">Tüm Durumlar</option>
                                 {ALL_STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
@@ -410,7 +413,7 @@ const Applications = () => {
                                         <p className="font-bold text-black/70 mb-1">
                                             {hasFilter ? 'Sonuç bulunamadı' : 'Henüz başvuru eklemediniz'}
                                         </p>
-                                        <p className="text-sm text-black/40">
+                                        <p className="text-sm text-black/60">
                                             {hasFilter
                                                 ? 'Filtreleri sıfırlayıp tekrar deneyin.'
                                                 : 'İlk başvurunuzu eklemek için Ekle butonunu kullanın.'}

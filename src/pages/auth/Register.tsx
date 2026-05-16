@@ -73,11 +73,11 @@ const Register = () => {
         type = 'text', placeholder = ''
     ) => (
         <div>
-            <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-black/40">{label}</label>
+            <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-black/60">{label}</label>
             <input type={type} value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} required
                 autoComplete={type === 'email' ? 'email' : label.toLowerCase() === 'ad' ? 'given-name' : label.toLowerCase() === 'soyad' ? 'family-name' : 'off'}
                 pattern={type === 'email' ? '[a-zA-Z0-9._%+\\-]+@[a-zA-Z0-9.\\-]+\\.[a-zA-Z]{2,}' : undefined}
-                className="w-full rounded-xl border border-black/8 bg-[#fafafa] px-4 py-3.5 text-base sm:text-sm font-medium text-black outline-none transition-all placeholder:text-black/25 focus:border-orange-300 focus:bg-white focus:ring-2 focus:ring-orange-400/20" />
+                className="w-full rounded-xl border border-black/8 bg-[#fafafa] px-4 py-3.5 text-base sm:text-sm font-medium text-black outline-none transition-all placeholder:text-black/45 focus:border-orange-300 focus:bg-white focus:ring-2 focus:ring-orange-400/20" />
         </div>
     );
 
@@ -113,14 +113,14 @@ const Register = () => {
                         {field('E-posta', email, setEmail, 'email', 'ornek@email.com')}
 
                         <div>
-                            <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-black/40">Şifre</label>
+                            <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-black/60">Şifre</label>
                             <div className="relative">
                                 <input type={showPass ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)}
                                     placeholder="En az 6 karakter" required minLength={6}
                                     autoComplete="new-password"
-                                    className="w-full rounded-xl border border-black/8 bg-[#fafafa] px-4 py-3.5 pr-12 text-base sm:text-sm font-medium text-black outline-none transition-all placeholder:text-black/25 focus:border-orange-300 focus:bg-white focus:ring-2 focus:ring-orange-400/20" />
+                                    className="w-full rounded-xl border border-black/8 bg-[#fafafa] px-4 py-3.5 pr-12 text-base sm:text-sm font-medium text-black outline-none transition-all placeholder:text-black/45 focus:border-orange-300 focus:bg-white focus:ring-2 focus:ring-orange-400/20" />
                                 <button type="button" onClick={() => setShowPass(p => !p)}
-                                    className="absolute right-4 top-1/2 -translate-y-1/2 text-black/30 hover:text-black/60 transition-colors" tabIndex={-1}>
+                                    className="absolute right-4 top-1/2 -translate-y-1/2 text-black/55 hover:text-black/60 transition-colors" tabIndex={-1}>
                                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                         {showPass ? <><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94" /><line x1="1" y1="1" x2="23" y2="23" /></> : <><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" /></>}
                                     </svg>
@@ -140,7 +140,7 @@ const Register = () => {
                             <div className="w-full border-t border-black/8" />
                         </div>
                         <div className="relative flex justify-center">
-                            <span className="bg-white px-3 text-xs text-black/40 font-medium">veya</span>
+                            <span className="bg-white px-3 text-xs text-black/60 font-medium">veya</span>
                         </div>
                     </div>
 

@@ -74,7 +74,7 @@ const ForgotPassword = () => {
                                         </div>
                                     )}
                                     <div>
-                                        <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-black/40">E-posta</label>
+                                        <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-black/60">E-posta</label>
                                         <input
                                             type="email"
                                             value={email}
@@ -82,7 +82,7 @@ const ForgotPassword = () => {
                                             autoComplete="email" inputMode="email"
                                             pattern="[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}"
                                             title="Geçerli bir e-posta adresi girin"
-                                            className="w-full rounded-xl border border-black/8 bg-[#fafafa] px-4 py-3.5 text-base sm:text-sm font-medium text-black outline-none transition-all placeholder:text-black/25 focus:border-orange-300 focus:bg-white focus:ring-2 focus:ring-orange-400/20"
+                                            className="w-full rounded-xl border border-black/8 bg-[#fafafa] px-4 py-3.5 text-base sm:text-sm font-medium text-black outline-none transition-all placeholder:text-black/45 focus:border-orange-300 focus:bg-white focus:ring-2 focus:ring-orange-400/20"
                                             placeholder="ornek@email.com"
                                             required
                                         />
