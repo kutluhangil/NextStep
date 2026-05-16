@@ -3,6 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useLanguage } from '../lib/i18n';
 import * as pdfjsLib from 'pdfjs-dist';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
+import { useAppStore } from '../store/useAppStore';
+import { Trash2 } from 'lucide-react';
 
 // Use bundled worker inline
 pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
@@ -114,20 +116,29 @@ const ScoreRing = ({ score }: { score: number }) => {
 const CVPage = () => {
     useDocumentTitle('CV Analizi');
     const { t, lang } = useLanguage();
-    const [cvText, setCvText] = useState('');
-    const [fileName, setFileName] = useState('');
+    const cvAnalysis = useAppStore(s => s.cvAnalysis);
+    const setCVAnalysis = useAppStore(s => s.setCVAnalysis);
+    const appendGeminiTurn = useAppStore(s => s.appendGeminiTurn);
+
     const [loading, setLoading] = useState(false);
-    const [sections, setSections] = useState<Record<string, string>>({});
-    const [atsResult, setAtsResult] = useState<ReturnType<typeof computeATSScore> | null>(null);
     const [geminiMsg, setGeminiMsg] = useState('');
-    const [geminiResponse, setGeminiResponse] = useState('');
     const [geminiLoading, setGeminiLoading] = useState(false);
     const [dragOver, setDragOver] = useState(false);
+    const [errorMsg, setErrorMsg] = useState('');
     const fileRef = useRef<HTMLInputElement>(null);
+
+    // Derived values from persisted store
+    const fileName = cvAnalysis?.fileName ?? '';
+    const cvText = cvAnalysis?.cvText ?? '';
+    const sections = cvAnalysis?.sections ?? {};
+    const atsResult = cvAnalysis
+        ? { score: cvAnalysis.atsScore, breakdown: cvAnalysis.atsBreakdown, tips: cvAnalysis.atsTips }
+        : null;
+    const geminiHistory = cvAnalysis?.geminiHistory ?? [];
 
     const processPDF = async (file: File) => {
         setLoading(true);
-        setFileName(file.name);
+        setErrorMsg('');
         try {
             const arrayBuffer = await file.arrayBuffer();
             const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
@@ -137,28 +148,55 @@ const CVPage = () => {
                 const content = await page.getTextContent();
                 fullText += content.items.map((i: unknown) => (i as { str?: string }).str ?? '').join(' ') + '\n';
             }
-            setCvText(fullText);
-            setSections(parseCVSections(fullText));
-            setAtsResult(computeATSScore(fullText));
+            const parsedSections = parseCVSections(fullText);
+            const ats = computeATSScore(fullText);
+            // Persist to store so it survives navigation
+            setCVAnalysis({
+                fileName: file.name,
+                cvText: fullText,
+                sections: parsedSections,
+                atsScore: ats.score,
+                atsBreakdown: ats.breakdown,
+                atsTips: ats.tips,
+                geminiHistory: [],
+                uploadedAt: Date.now(),
+            });
         } catch {
-            setCvText(lang === 'tr' ? 'PDF okunamadı.' : 'Could not read PDF.');
+            setErrorMsg(lang === 'tr' ? 'PDF okunamadı. Lütfen farklı bir dosya deneyin.' : 'Could not read PDF. Please try a different file.');
         } finally {
             setLoading(false);
         }
     };
 
     const handleFile = (f: File) => {
-        if (f.type === 'application/pdf') processPDF(f);
+        if (f.type !== 'application/pdf') {
+            setErrorMsg(lang === 'tr' ? 'Yalnızca PDF dosyaları desteklenmektedir.' : 'Only PDF files are supported.');
+            return;
+        }
+        if (f.size > 10 * 1024 * 1024) {
+            setErrorMsg(lang === 'tr' ? 'Dosya 10MB sınırını aşıyor.' : 'File exceeds the 10MB limit.');
+            return;
+        }
+        processPDF(f);
+    };
+
+    const handleClearCV = () => {
+        setCVAnalysis(null);
+        setGeminiMsg('');
+        setErrorMsg('');
+        if (fileRef.current) fileRef.current.value = '';
     };
 
     const handleGemini = async () => {
         if (!geminiMsg.trim() || !cvText) return;
+        const question = geminiMsg;
         setGeminiLoading(true);
         try {
-            const resp = await askGemini(cvText, geminiMsg, lang);
-            setGeminiResponse(resp);
+            const resp = await askGemini(cvText, question, lang);
+            appendGeminiTurn(question, resp);
+            setGeminiMsg('');
         } catch {
-            setGeminiResponse(lang === 'tr' ? 'Hata oluştu. Tekrar deneyin.' : 'An error occurred. Please try again.');
+            appendGeminiTurn(question, lang === 'tr' ? 'Hata oluştu. Tekrar deneyin.' : 'An error occurred. Please try again.');
         } finally {
             setGeminiLoading(false);
         }
@@ -180,8 +218,8 @@ const CVPage = () => {
                     onDragOver={e => { e.preventDefault(); setDragOver(true); }}
                     onDragLeave={() => setDragOver(false)}
                     onDrop={e => { e.preventDefault(); setDragOver(false); const f = e.dataTransfer.files[0]; if (f) handleFile(f); }}
-                    onClick={() => fileRef.current?.click()}
-                    className={`group cursor-pointer rounded-3xl border-2 border-dashed transition-all p-10 sm:p-16 text-center mb-6 ${dragOver ? 'border-orange-400 bg-orange-50/50' : 'border-black/10 bg-white hover:border-orange-300 hover:bg-orange-50/30'}`}
+                    onClick={() => { if (!fileName) fileRef.current?.click(); }}
+                    className={`relative group rounded-3xl border-2 border-dashed transition-all p-10 sm:p-16 text-center mb-6 ${fileName ? 'cursor-default' : 'cursor-pointer'} ${dragOver ? 'border-orange-400 bg-orange-50/50' : 'border-black/10 bg-white hover:border-orange-300 hover:bg-orange-50/30'}`}
                 >
                     <input ref={fileRef} type="file" accept=".pdf" className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f) handleFile(f); }} />
                     {loading ? (
@@ -193,10 +231,25 @@ const CVPage = () => {
                             <p className="text-sm font-medium text-black/50">{t('cv.analyzing')}</p>
                         </div>
                     ) : fileName ? (
-                        <div className="flex flex-col items-center gap-2">
+                        <div className="flex flex-col items-center gap-3">
                             <div className="w-12 h-12 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-2xl">✅</div>
                             <p className="text-sm font-bold text-[#1d1d1f]">{fileName}</p>
-                            <p className="text-xs text-black/60">{lang === 'tr' ? 'Farklı dosya için tıklayın' : 'Click to change file'}</p>
+                            {cvAnalysis?.uploadedAt && (
+                                <p className="text-xs text-black/60">
+                                    {lang === 'tr' ? 'Yüklenme: ' : 'Uploaded: '}
+                                    {new Date(cvAnalysis.uploadedAt).toLocaleString(lang === 'tr' ? 'tr-TR' : 'en-US', { dateStyle: 'medium', timeStyle: 'short' })}
+                                </p>
+                            )}
+                            <div className="flex flex-wrap gap-2 mt-3 justify-center">
+                                <button type="button" onClick={(e) => { e.stopPropagation(); fileRef.current?.click(); }}
+                                    className="rounded-full bg-orange-50 border border-orange-200 text-orange-600 px-4 py-2 text-xs font-bold hover:bg-orange-100 transition-all">
+                                    {lang === 'tr' ? 'Farklı CV Yükle' : 'Upload Different CV'}
+                                </button>
+                                <button type="button" onClick={(e) => { e.stopPropagation(); handleClearCV(); }}
+                                    className="flex items-center gap-1.5 rounded-full bg-rose-50 border border-rose-200 text-rose-600 px-4 py-2 text-xs font-bold hover:bg-rose-100 transition-all">
+                                    <Trash2 size={12} /> {lang === 'tr' ? 'CV\'yi Kaldır' : 'Remove CV'}
+                                </button>
+                            </div>
                         </div>
                     ) : (
                         <div className="flex flex-col items-center gap-3">
@@ -206,6 +259,18 @@ const CVPage = () => {
                         </div>
                     )}
                 </motion.div>
+
+                {/* Error message */}
+                {errorMsg && (
+                    <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}
+                        className="rounded-2xl bg-rose-50 border border-rose-200 text-rose-700 px-5 py-3 text-sm font-semibold flex items-center gap-2 mb-5"
+                        role="alert">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                            <circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" />
+                        </svg>
+                        {errorMsg}
+                    </motion.div>
+                )}
 
                 {/* Results */}
                 <AnimatePresence>
@@ -301,14 +366,31 @@ const CVPage = () => {
                                         {geminiLoading ? '...' : t('gemini.send')}
                                     </button>
                                 </div>
-                                <AnimatePresence>
-                                    {geminiResponse && (
-                                        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-                                            className="mt-4 rounded-2xl bg-[#fafafa] border border-black/5 p-5 text-sm text-black/75 leading-relaxed whitespace-pre-wrap">
-                                            {geminiResponse}
-                                        </motion.div>
-                                    )}
-                                </AnimatePresence>
+                                {/* Persisted chat history */}
+                                {geminiHistory.length > 0 && (
+                                    <div className="mt-5 flex flex-col gap-3">
+                                        {geminiHistory.map((turn, i) => (
+                                            <motion.div key={i} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+                                                className="flex flex-col gap-2">
+                                                <div className="self-end max-w-[85%] rounded-2xl px-4 py-2.5 text-sm font-medium text-white"
+                                                    style={{ background: 'linear-gradient(135deg, #f97316, #14b8a6)' }}>
+                                                    {turn.q}
+                                                </div>
+                                                <div className="rounded-2xl bg-[#fafafa] border border-black/5 p-4 text-sm text-black/75 leading-relaxed whitespace-pre-wrap">
+                                                    {turn.a}
+                                                </div>
+                                            </motion.div>
+                                        ))}
+                                        {geminiLoading && (
+                                            <div className="rounded-2xl bg-[#fafafa] border border-black/5 p-4 flex items-center gap-1.5">
+                                                {[0, 1, 2].map(i => (
+                                                    <motion.div key={i} animate={{ y: [0, -4, 0] }} transition={{ duration: 0.8, repeat: Infinity, delay: i * 0.15 }}
+                                                        className="w-1.5 h-1.5 rounded-full bg-black/30" />
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
                             </div>
                         </motion.div>
                     )}

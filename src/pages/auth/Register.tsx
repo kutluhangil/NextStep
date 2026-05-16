@@ -5,6 +5,14 @@ import { useAppStore } from '../../store/useAppStore';
 import { registerUser, loginWithGoogle } from '../../lib/authService';
 import { useDocumentTitle } from '../../hooks/useDocumentTitle';
 
+// Per-field character limits — declared once, reused in JSX + validation
+const LIMITS = {
+    firstName: { max: 50, label: 'Ad' },
+    lastName: { max: 50, label: 'Soyad' },
+    email: { max: 254, label: 'E-posta' },        // RFC 5321
+    password: { min: 6, max: 128, label: 'Şifre' }, // 128 = common ceiling
+} as const;
+
 const Register = () => {
     useDocumentTitle('Kayıt Ol');
     const [firstName, setFirstName] = useState('');
@@ -14,6 +22,7 @@ const Register = () => {
     const [showPass, setShowPass] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+    const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
     const login = useAppStore(state => state.login);
     const navigate = useNavigate();
 
@@ -39,16 +48,35 @@ const Register = () => {
     const handleRegister = async (e: React.FormEvent) => {
         e.preventDefault();
         if (loading) return;
+
         const trimmedEmail = email.trim();
-        const displayName = `${firstName} ${lastName}`.trim();
-        if (!firstName.trim() || !trimmedEmail || !password) {
-            setError('Tüm zorunlu alanları doldurun.');
+        const trimmedFirst = firstName.trim();
+        const trimmedLast = lastName.trim();
+        const displayName = `${trimmedFirst} ${trimmedLast}`.trim();
+
+        // ── Per-field validation with specific messages ──
+        const errs: Record<string, string> = {};
+
+        if (!trimmedFirst) errs.firstName = 'Ad alanı zorunludur.';
+        else if (trimmedFirst.length > LIMITS.firstName.max) errs.firstName = `Ad en fazla ${LIMITS.firstName.max} karakter olabilir (şu an ${trimmedFirst.length}).`;
+
+        if (trimmedLast.length > LIMITS.lastName.max) errs.lastName = `Soyad en fazla ${LIMITS.lastName.max} karakter olabilir (şu an ${trimmedLast.length}).`;
+
+        if (!trimmedEmail) errs.email = 'E-posta alanı zorunludur.';
+        else if (trimmedEmail.length > LIMITS.email.max) errs.email = `E-posta en fazla ${LIMITS.email.max} karakter olabilir (şu an ${trimmedEmail.length}).`;
+        else if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(trimmedEmail)) errs.email = 'Geçerli bir e-posta adresi girin (örn. ad@firma.com).';
+
+        if (!password) errs.password = 'Şifre alanı zorunludur.';
+        else if (password.length < LIMITS.password.min) errs.password = `Şifre en az ${LIMITS.password.min} karakter olmalı (şu an ${password.length}).`;
+        else if (password.length > LIMITS.password.max) errs.password = `Şifre en fazla ${LIMITS.password.max} karakter olabilir (şu an ${password.length}).`;
+
+        if (Object.keys(errs).length > 0) {
+            setFieldErrors(errs);
+            setError('');
             return;
         }
-        if (password.length < 6) {
-            setError('Şifre en az 6 karakter olmalı.');
-            return;
-        }
+        setFieldErrors({});
+
         setLoading(true);
         setError('');
         try {
@@ -56,30 +84,51 @@ const Register = () => {
             login(user.email ?? trimmedEmail, displayName, user.uid);
             navigate('/dashboard', { replace: true });
         } catch (err: unknown) {
-            const e = err as { code?: string };
-            if (e.code === 'auth/email-already-in-use') setError('Bu e-posta adresi zaten kayıtlı.');
-            else if (e.code === 'auth/weak-password') setError('Şifre en az 6 karakter olmalı.');
-            else if (e.code === 'auth/invalid-email') setError('Geçersiz e-posta adresi.');
+            const e = err as { code?: string; message?: string };
+            if (e.code === 'auth/email-already-in-use') setFieldErrors({ email: 'Bu e-posta adresi zaten kayıtlı. Giriş yapmayı deneyin.' });
+            else if (e.code === 'auth/weak-password') setFieldErrors({ password: 'Şifre yeterince güçlü değil. En az 6 karakter girin.' });
+            else if (e.code === 'auth/invalid-email') setFieldErrors({ email: 'Geçersiz e-posta adresi formatı.' });
             else if (e.code === 'auth/network-request-failed') setError('Ağ bağlantısı yok. İnternetinizi kontrol edin.');
-            else setError('Kayıt yapılamadı. Tekrar deneyin.');
+            else setError('Kayıt yapılamadı: ' + (e.message ?? 'beklenmeyen bir hata oluştu.'));
         } finally {
             setLoading(false);
         }
     };
 
     const field = (
+        name: 'firstName' | 'lastName' | 'email',
         label: string, value: string,
         onChange: (v: string) => void,
         type = 'text', placeholder = ''
-    ) => (
-        <div>
-            <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-black/60">{label}</label>
-            <input type={type} value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} required
-                autoComplete={type === 'email' ? 'email' : label.toLowerCase() === 'ad' ? 'given-name' : label.toLowerCase() === 'soyad' ? 'family-name' : 'off'}
-                pattern={type === 'email' ? '[a-zA-Z0-9._%+\\-]+@[a-zA-Z0-9.\\-]+\\.[a-zA-Z]{2,}' : undefined}
-                className="w-full rounded-xl border border-black/8 bg-[#fafafa] px-4 py-3.5 text-base sm:text-sm font-medium text-black outline-none transition-all placeholder:text-black/45 focus:border-orange-300 focus:bg-white focus:ring-2 focus:ring-orange-400/20" />
-        </div>
-    );
+    ) => {
+        const err = fieldErrors[name];
+        const max = name === 'email' ? LIMITS.email.max : LIMITS[name].max;
+        const overLimit = value.length > max;
+        return (
+            <div>
+                <label className="mb-1.5 flex items-center justify-between text-xs font-bold uppercase tracking-wider text-black/60">
+                    <span>{label}{name !== 'lastName' && <span className="text-rose-500 ml-1" aria-hidden="true">*</span>}</span>
+                    <span className={`font-mono normal-case tracking-normal text-[10px] ${overLimit ? 'text-rose-600' : 'text-black/55'}`}>
+                        {value.length}/{max}
+                    </span>
+                </label>
+                <input type={type} value={value} onChange={e => { onChange(e.target.value); if (err) setFieldErrors(p => { const n = { ...p }; delete n[name]; return n; }); }}
+                    placeholder={placeholder}
+                    maxLength={max}
+                    aria-invalid={!!err}
+                    autoComplete={type === 'email' ? 'email' : name === 'firstName' ? 'given-name' : name === 'lastName' ? 'family-name' : 'off'}
+                    className={`w-full rounded-xl border bg-[#fafafa] px-4 py-3.5 text-base sm:text-sm font-medium text-black outline-none transition-all placeholder:text-black/45 focus:bg-white focus:ring-2 ${err ? 'border-rose-400 bg-rose-50/30 focus:ring-rose-400/20 focus:border-rose-400' : 'border-black/8 focus:border-orange-300 focus:ring-orange-400/20'}`} />
+                {err && (
+                    <p className="mt-1.5 text-xs font-semibold text-rose-600 flex items-start gap-1" role="alert">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="mt-0.5 flex-shrink-0">
+                            <circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" />
+                        </svg>
+                        {err}
+                    </p>
+                )}
+            </div>
+        );
+    };
 
     return (
         <div className="relative flex min-h-screen items-center justify-center bg-[#f8f8fa] px-6 py-20 overflow-hidden">
@@ -107,18 +156,25 @@ const Register = () => {
                         )}
 
                         <div className="grid grid-cols-2 gap-3">
-                            {field('Ad', firstName, setFirstName)}
-                            {field('Soyad', lastName, setLastName)}
+                            {field('firstName', 'Ad', firstName, setFirstName)}
+                            {field('lastName', 'Soyad', lastName, setLastName)}
                         </div>
-                        {field('E-posta', email, setEmail, 'email', 'ornek@email.com')}
+                        {field('email', 'E-posta', email, setEmail, 'email', 'ornek@email.com')}
 
                         <div>
-                            <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-black/60">Şifre</label>
+                            <label className="mb-1.5 flex items-center justify-between text-xs font-bold uppercase tracking-wider text-black/60">
+                                <span>Şifre<span className="text-rose-500 ml-1" aria-hidden="true">*</span></span>
+                                <span className={`font-mono normal-case tracking-normal text-[10px] ${password.length > LIMITS.password.max ? 'text-rose-600' : 'text-black/55'}`}>
+                                    {password.length}/{LIMITS.password.max}
+                                </span>
+                            </label>
                             <div className="relative">
-                                <input type={showPass ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)}
-                                    placeholder="En az 6 karakter" required minLength={6}
+                                <input type={showPass ? 'text' : 'password'} value={password}
+                                    onChange={e => { setPassword(e.target.value); if (fieldErrors.password) setFieldErrors(p => { const n = { ...p }; delete n.password; return n; }); }}
+                                    placeholder="En az 6 karakter" minLength={LIMITS.password.min} maxLength={LIMITS.password.max}
                                     autoComplete="new-password"
-                                    className="w-full rounded-xl border border-black/8 bg-[#fafafa] px-4 py-3.5 pr-12 text-base sm:text-sm font-medium text-black outline-none transition-all placeholder:text-black/45 focus:border-orange-300 focus:bg-white focus:ring-2 focus:ring-orange-400/20" />
+                                    aria-invalid={!!fieldErrors.password}
+                                    className={`w-full rounded-xl border bg-[#fafafa] px-4 py-3.5 pr-12 text-base sm:text-sm font-medium text-black outline-none transition-all placeholder:text-black/45 focus:bg-white focus:ring-2 ${fieldErrors.password ? 'border-rose-400 bg-rose-50/30 focus:ring-rose-400/20 focus:border-rose-400' : 'border-black/8 focus:border-orange-300 focus:ring-orange-400/20'}`} />
                                 <button type="button" onClick={() => setShowPass(p => !p)}
                                     className="absolute right-4 top-1/2 -translate-y-1/2 text-black/55 hover:text-black/60 transition-colors" tabIndex={-1}>
                                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -126,6 +182,14 @@ const Register = () => {
                                     </svg>
                                 </button>
                             </div>
+                            {fieldErrors.password && (
+                                <p className="mt-1.5 text-xs font-semibold text-rose-600 flex items-start gap-1" role="alert">
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="mt-0.5 flex-shrink-0">
+                                        <circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" />
+                                    </svg>
+                                    {fieldErrors.password}
+                                </p>
+                            )}
                         </div>
 
                         <motion.button type="submit" disabled={loading || !email || !password || !firstName} whileTap={{ scale: 0.98 }}

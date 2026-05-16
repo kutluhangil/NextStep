@@ -75,6 +75,18 @@ export interface NotificationPrefs {
     offerAlerts: boolean;
 }
 
+// CV analysis state — persisted across navigation so users don't re-upload
+export interface CVAnalysis {
+    fileName: string;
+    cvText: string;
+    sections: Record<string, string>;
+    atsScore: number;
+    atsBreakdown: Record<string, number>;
+    atsTips: string[];
+    geminiHistory: { q: string; a: string }[];
+    uploadedAt: number;
+}
+
 interface AppState {
     isAuthenticated: boolean;
     firebaseUid: string | null;
@@ -82,6 +94,7 @@ interface AppState {
     applications: Application[];
     theme: Theme;
     notifications: NotificationPrefs;
+    cvAnalysis: CVAnalysis | null;
 
     // Actions
     login: (email: string, name?: string, uid?: string) => void;
@@ -92,6 +105,8 @@ interface AppState {
     setApplications: (apps: Application[]) => void;
     setTheme: (theme: Theme) => void;
     setNotifications: (prefs: Partial<NotificationPrefs>) => void;
+    setCVAnalysis: (cv: CVAnalysis | null) => void;
+    appendGeminiTurn: (q: string, a: string) => void;
 
     // Async Cloud Actions
     addApplicationAsync: (app: Omit<Application, 'id' | 'no' | 'createdAt'>) => Promise<void>;
@@ -116,12 +131,20 @@ export const useAppStore = create<AppState>()(
                 reminderInactive: true,
                 offerAlerts: false,
             },
+            cvAnalysis: null,
 
             login: (email, name = 'Kullanıcı', uid) =>
                 set({ isAuthenticated: true, firebaseUid: uid ?? null, user: { name, email } }),
 
             logout: () =>
-                set({ isAuthenticated: false, firebaseUid: null, user: null, applications: [] }),
+                set({ isAuthenticated: false, firebaseUid: null, user: null, applications: [], cvAnalysis: null }),
+
+            setCVAnalysis: (cv) => set({ cvAnalysis: cv }),
+            appendGeminiTurn: (q, a) =>
+                set((state) => state.cvAnalysis
+                    ? { cvAnalysis: { ...state.cvAnalysis, geminiHistory: [...state.cvAnalysis.geminiHistory, { q, a }] } }
+                    : {}
+                ),
 
             addApplication: (appData: Omit<Application, 'id' | 'no' | 'createdAt'>) =>
                 set((state) => {
@@ -195,13 +218,11 @@ export const useAppStore = create<AppState>()(
             partialize: (state) => ({
                 theme: state.theme,
                 notifications: state.notifications,
-                // Do not persist applications, always pull from DB for real sync
-                // But wait, offline-first means we should persist it. 
-                // Let's persist them, and on start we just fetch and overwrite.
                 applications: state.applications,
                 isAuthenticated: state.isAuthenticated,
                 firebaseUid: state.firebaseUid,
-                user: state.user
+                user: state.user,
+                cvAnalysis: state.cvAnalysis,
             }),
         }
     )
