@@ -3,6 +3,7 @@ import { useAppStore } from '../store/useAppStore';
 import { motion } from 'framer-motion';
 import { useDark } from '../hooks/useDark';
 import { logoutUser } from '../lib/authService';
+import { useDocumentTitle } from '../hooks/useDocumentTitle';
 
 
 const statusColor: Record<string, string> = {
@@ -19,6 +20,7 @@ const statusColor: Record<string, string> = {
 };
 
 const Dashboard = () => {
+    useDocumentTitle('Dashboard');
     const user = useAppStore(state => state.user);
     const applications = useAppStore(state => state.applications);
     const logout = useAppStore(state => state.logout);
@@ -36,7 +38,8 @@ const Dashboard = () => {
     const handleLogout = async () => {
         await logoutUser();
         logout();
-        navigate('/');
+        // replace history so the back button can't return to dashboard after logout
+        navigate('/', { replace: true });
     };
 
     const total = applications.length;

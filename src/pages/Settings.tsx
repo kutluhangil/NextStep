@@ -8,6 +8,8 @@ import { useLanguage } from '../lib/i18n';
 import { useDark } from '../hooks/useDark';
 import type { Theme } from '../store/useAppStore';
 import { logoutUser } from '../lib/authService';
+import { useDocumentTitle } from '../hooks/useDocumentTitle';
+import { safeStorage } from '../lib/safeStorage';
 
 const fadeUp = (delay = 0) => ({
     initial: { opacity: 0, y: 16 },
@@ -16,6 +18,7 @@ const fadeUp = (delay = 0) => ({
 });
 
 const Settings = () => {
+    useDocumentTitle('Ayarlar');
     const user = useAppStore(state => state.user);
     const logout = useAppStore(state => state.logout);
     const applications = useAppStore(state => state.applications);
@@ -77,11 +80,11 @@ const Settings = () => {
         setWiping(true);
         try {
             await wipeApplications();
-            localStorage.removeItem('nextstep-storage');
-            localStorage.removeItem('nextstep-remembered-email');
+            safeStorage.remove('nextstep-storage');
+            safeStorage.remove('nextstep-remembered-email');
             window.location.href = '/';
         } catch (error) {
-            console.error(error);
+            if (import.meta.env.DEV) console.error(error);
             alert("Silme işlemi sırasında hata oluştu. Bağlantınızı kontrol edin.");
             setWiping(false);
             setShowConfirm(false);
@@ -91,7 +94,8 @@ const Settings = () => {
     const handleLogout = async () => {
         await logoutUser();
         logout();
-        navigate('/');
+        // replace history so the back button can't return to a protected page
+        navigate('/', { replace: true });
     };
 
     const toast = (msg: string) => {

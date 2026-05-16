@@ -20,7 +20,7 @@ export const addApplicationFS = async (
         });
         return ref.id;
     } catch (error) {
-        console.error("🔥 Firestore Add Error:", error);
+        if (import.meta.env.DEV) console.error("Firestore Add Error:", error);
         throw error;
     }
 };
@@ -41,7 +41,7 @@ export const getApplicationsFS = async (userId: string): Promise<Application[]> 
             ...(d.data() as DocumentData),
         })) as Application[];
     } catch (error) {
-        console.error("🔥 Firestore Get Error:", error);
+        if (import.meta.env.DEV) console.error("Firestore Get Error:", error);
         throw error;
     }
 };
@@ -52,7 +52,7 @@ export const updateApplicationFS = async (id: string, data: Partial<Application>
         const ref = doc(db, COLL, id);
         await updateDoc(ref, { ...data });
     } catch (error) {
-        console.error("🔥 Firestore Update Error:", error);
+        if (import.meta.env.DEV) console.error("Firestore Update Error:", error);
         throw error;
     }
 };
@@ -62,7 +62,7 @@ export const deleteApplicationFS = async (id: string) => {
     try {
         await deleteDoc(doc(db, COLL, id));
     } catch (error) {
-        console.error("🔥 Firestore Delete Error:", error);
+        if (import.meta.env.DEV) console.error("Firestore Delete Error:", error);
         throw error;
     }
 };
@@ -80,7 +80,7 @@ export const wipeUserApplicationsFS = async (userId: string) => {
         
         await batch.commit();
     } catch (error) {
-        console.error("🔥 Firestore Wipe Error:", error);
+        if (import.meta.env.DEV) console.error("Firestore Wipe Error:", error);
         throw error;
     }
 };

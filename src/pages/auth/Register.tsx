@@ -3,8 +3,10 @@ import { motion } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAppStore } from '../../store/useAppStore';
 import { registerUser, loginWithGoogle } from '../../lib/authService';
+import { useDocumentTitle } from '../../hooks/useDocumentTitle';
 
 const Register = () => {
+    useDocumentTitle('Kayıt Ol');
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
     const [email, setEmail] = useState('');
@@ -16,13 +18,14 @@ const Register = () => {
     const navigate = useNavigate();
 
     const handleGoogleLogin = async () => {
+        if (loading) return;
         setLoading(true);
         setError('');
         try {
             const user = await loginWithGoogle();
             const name = user.displayName || user.email?.split('@')[0] || 'Kullanıcı';
             login(user.email ?? '', name, user.uid);
-            navigate('/dashboard');
+            navigate('/dashboard', { replace: true });
         } catch (err: unknown) {
             const e = err as { code?: string };
             if (e.code !== 'auth/popup-closed-by-user') {
@@ -35,18 +38,29 @@ const Register = () => {
 
     const handleRegister = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (loading) return;
+        const trimmedEmail = email.trim();
+        const displayName = `${firstName} ${lastName}`.trim();
+        if (!firstName.trim() || !trimmedEmail || !password) {
+            setError('Tüm zorunlu alanları doldurun.');
+            return;
+        }
+        if (password.length < 6) {
+            setError('Şifre en az 6 karakter olmalı.');
+            return;
+        }
         setLoading(true);
         setError('');
         try {
-            const displayName = `${firstName} ${lastName}`.trim();
-            const user = await registerUser(email, password, displayName);
-            login(user.email ?? email, displayName, user.uid);
-            navigate('/dashboard');
+            const user = await registerUser(trimmedEmail, password, displayName);
+            login(user.email ?? trimmedEmail, displayName, user.uid);
+            navigate('/dashboard', { replace: true });
         } catch (err: unknown) {
             const e = err as { code?: string };
             if (e.code === 'auth/email-already-in-use') setError('Bu e-posta adresi zaten kayıtlı.');
             else if (e.code === 'auth/weak-password') setError('Şifre en az 6 karakter olmalı.');
             else if (e.code === 'auth/invalid-email') setError('Geçersiz e-posta adresi.');
+            else if (e.code === 'auth/network-request-failed') setError('Ağ bağlantısı yok. İnternetinizi kontrol edin.');
             else setError('Kayıt yapılamadı. Tekrar deneyin.');
         } finally {
             setLoading(false);
@@ -61,7 +75,9 @@ const Register = () => {
         <div>
             <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-black/40">{label}</label>
             <input type={type} value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} required
-                className="w-full rounded-xl border border-black/8 bg-[#fafafa] px-4 py-3.5 text-sm font-medium text-black outline-none transition-all placeholder:text-black/25 focus:border-orange-300 focus:bg-white focus:ring-2 focus:ring-orange-400/20" />
+                autoComplete={type === 'email' ? 'email' : label.toLowerCase() === 'ad' ? 'given-name' : label.toLowerCase() === 'soyad' ? 'family-name' : 'off'}
+                pattern={type === 'email' ? '[a-zA-Z0-9._%+\\-]+@[a-zA-Z0-9.\\-]+\\.[a-zA-Z]{2,}' : undefined}
+                className="w-full rounded-xl border border-black/8 bg-[#fafafa] px-4 py-3.5 text-base sm:text-sm font-medium text-black outline-none transition-all placeholder:text-black/25 focus:border-orange-300 focus:bg-white focus:ring-2 focus:ring-orange-400/20" />
         </div>
     );
 
@@ -101,7 +117,8 @@ const Register = () => {
                             <div className="relative">
                                 <input type={showPass ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)}
                                     placeholder="En az 6 karakter" required minLength={6}
-                                    className="w-full rounded-xl border border-black/8 bg-[#fafafa] px-4 py-3.5 pr-12 text-sm font-medium text-black outline-none transition-all placeholder:text-black/25 focus:border-orange-300 focus:bg-white focus:ring-2 focus:ring-orange-400/20" />
+                                    autoComplete="new-password"
+                                    className="w-full rounded-xl border border-black/8 bg-[#fafafa] px-4 py-3.5 pr-12 text-base sm:text-sm font-medium text-black outline-none transition-all placeholder:text-black/25 focus:border-orange-300 focus:bg-white focus:ring-2 focus:ring-orange-400/20" />
                                 <button type="button" onClick={() => setShowPass(p => !p)}
                                     className="absolute right-4 top-1/2 -translate-y-1/2 text-black/30 hover:text-black/60 transition-colors" tabIndex={-1}>
                                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">

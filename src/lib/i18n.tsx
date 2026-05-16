@@ -1,5 +1,6 @@
 /* eslint-disable react-refresh/only-export-components */
 import React, { createContext, useContext, useState } from 'react';
+import { safeStorage } from './safeStorage';
 
 export type Lang = 'tr' | 'en';
 
@@ -157,12 +158,12 @@ const LangContext = createContext<LangContextType>({
 
 export const LanguageProvider = ({ children }: { children: React.ReactNode }) => {
     const [lang, setLangState] = useState<Lang>(() => {
-        return (localStorage.getItem('nextstep-lang') as Lang) ?? 'tr';
+        return (safeStorage.get('nextstep-lang') as Lang) ?? 'tr';
     });
 
     const setLang = (l: Lang) => {
         setLangState(l);
-        localStorage.setItem('nextstep-lang', l);
+        safeStorage.set('nextstep-lang', l);
     };
 
     const t = (key: TranslationKey): string =>

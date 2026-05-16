@@ -3,8 +3,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { CheckCircle2 } from 'lucide-react';
 import { resetPassword } from '../../lib/authService';
+import { useDocumentTitle } from '../../hooks/useDocumentTitle';
 
 const ForgotPassword = () => {
+    useDocumentTitle('Şifremi Unuttum');
     const [email, setEmail] = useState('');
     const [loading, setLoading] = useState(false);
     const [isSent, setIsSent] = useState(false);
@@ -12,15 +14,25 @@ const ForgotPassword = () => {
 
     const handleSendLink = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (loading) return;
+        const trimmed = email.trim();
+        if (!trimmed) {
+            setError('Lütfen e-posta adresinizi girin.');
+            return;
+        }
         setLoading(true);
         setError('');
         try {
-            await resetPassword(email);
+            await resetPassword(trimmed);
             setIsSent(true);
         } catch (err: unknown) {
-            const e = err as { code?: string };
-            if (e.code === 'auth/user-not-found' || e.code === 'auth/invalid-email') {
+            const errObj = err as { code?: string };
+            if (errObj.code === 'auth/user-not-found' || errObj.code === 'auth/invalid-email') {
                 setError('Bu e-posta adresiyle kayıtlı bir hesap bulunamadı.');
+            } else if (errObj.code === 'auth/network-request-failed') {
+                setError('Ağ bağlantısı yok. İnternetinizi kontrol edin.');
+            } else if (errObj.code === 'auth/too-many-requests') {
+                setError('Çok fazla deneme. Lütfen bekleyin.');
             } else {
                 setError('Bir hata oluştu. Lütfen tekrar deneyin.');
             }
@@ -67,7 +79,10 @@ const ForgotPassword = () => {
                                             type="email"
                                             value={email}
                                             onChange={(e) => setEmail(e.target.value)}
-                                            className="w-full rounded-xl border border-black/8 bg-[#fafafa] px-4 py-3.5 text-sm font-medium text-black outline-none transition-all placeholder:text-black/25 focus:border-orange-300 focus:bg-white focus:ring-2 focus:ring-orange-400/20"
+                                            autoComplete="email" inputMode="email"
+                                            pattern="[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}"
+                                            title="Geçerli bir e-posta adresi girin"
+                                            className="w-full rounded-xl border border-black/8 bg-[#fafafa] px-4 py-3.5 text-base sm:text-sm font-medium text-black outline-none transition-all placeholder:text-black/25 focus:border-orange-300 focus:bg-white focus:ring-2 focus:ring-orange-400/20"
                                             placeholder="ornek@email.com"
                                             required
                                         />

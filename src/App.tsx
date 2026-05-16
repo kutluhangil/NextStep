@@ -64,6 +64,7 @@ const Analytics = lazy(() => import('./pages/Analytics').then(m => ({ default: m
 const Settings = lazy(() => import('./pages/Settings').then(m => ({ default: m.default })));
 const CVPage = lazy(() => import('./pages/CV'));
 const EditApplication = lazy(() => import('./pages/EditApplication').then(m => ({ default: m.default })));
+const NotFound = lazy(() => import('./pages/NotFound'));
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const isAuthenticated = useAppStore(state => state.isAuthenticated);
@@ -137,7 +138,7 @@ function App() {
               <Route path="/settings" element={<Settings />} />
             </Route>
 
-            <Route path="*" element={<Navigate to="/" replace />} />
+            <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>
       </BrowserRouter>

@@ -6,6 +6,7 @@ import {
     PieChart, Pie, Cell, LineChart, Line, CartesianGrid
 } from 'recharts';
 import { useDark } from '../hooks/useDark';
+import { useDocumentTitle } from '../hooks/useDocumentTitle';
 
 
 const COLORS = ['#4F46E5', '#14B8A6', '#F59E0B', '#EF4444', '#6B7280', '#EC4899'];
@@ -35,6 +36,7 @@ const WidgetHeader = ({ icon, label, color, isDark }: { icon: string; label: str
 
 
 const Analytics = () => {
+    useDocumentTitle('Analiz');
     const applications = useAppStore(state => state.applications);
     const isDark = useDark();
 
@@ -142,7 +144,20 @@ const Analytics = () => {
                     </p>
                 </motion.div>
 
-                {/* ══ 12-COLUMN GRID ══════════════════════════════════════════ */}
+                {/* Empty state when no applications */}
+                {applications.length === 0 ? (
+                    <motion.div {...fadeUp(0.1)}
+                        className={`rounded-3xl border p-12 sm:p-16 text-center ${isDark ? 'bg-[#1c1c1e] border-white/5' : 'bg-white border-black/5'}`}>
+                        <div className="text-5xl mb-5">📊</div>
+                        <h2 className={`text-2xl font-bold mb-2 ${isDark ? 'text-white' : 'text-[#1d1d1f]'}`}>
+                            Analiz için veri yok
+                        </h2>
+                        <p className={`text-sm max-w-md mx-auto leading-relaxed ${isDark ? 'text-white/50' : 'text-black/50'}`}>
+                            Başvuru ekledikçe bu sayfada mülakat oranları, platform başarısı, aylık trendler ve daha fazlası görünecek.
+                        </p>
+                    </motion.div>
+                ) : (
+                /* ══ 12-COLUMN GRID ══════════════════════════════════════════ */
                 <div className="grid grid-cols-12 gap-5 auto-rows-auto">
 
                     {/* ROW 1 ─────────────────────────────────────────────────── */}
@@ -419,6 +434,7 @@ const Analytics = () => {
                     </Widget>
 
                 </div>
+                )}
             </div>
         </div>
     );

@@ -3,8 +3,11 @@ import { motion } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAppStore } from '../../store/useAppStore';
 import { loginUser, loginWithGoogle } from '../../lib/authService';
+import { useDocumentTitle } from '../../hooks/useDocumentTitle';
+import { safeStorage } from '../../lib/safeStorage';
 
 const Login = () => {
+    useDocumentTitle('Giriş Yap');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [rememberMe, setRememberMe] = useState(false);
@@ -15,18 +18,19 @@ const Login = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        const saved = localStorage.getItem('nextstep-remembered-email');
+        const saved = safeStorage.get('nextstep-remembered-email');
         if (saved) { setEmail(saved); setRememberMe(true); }
     }, []);
 
     const handleGoogleLogin = async () => {
+        if (loading) return; // prevent double submit
         setLoading(true);
         setError('');
         try {
             const user = await loginWithGoogle();
             const name = user.displayName || user.email?.split('@')[0] || 'Kullanıcı';
             login(user.email ?? '', name, user.uid);
-            navigate('/dashboard');
+            navigate('/dashboard', { replace: true });
         } catch (err: unknown) {
             const e = err as { code?: string };
             if (e.code !== 'auth/popup-closed-by-user') {
@@ -39,22 +43,29 @@ const Login = () => {
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (loading) return; // prevent double submit
+        const trimmedEmail = email.trim();
+        if (!trimmedEmail || !password) {
+            setError('E-posta ve şifre alanları zorunludur.');
+            return;
+        }
         setLoading(true);
         setError('');
         try {
-            const user = await loginUser(email, password);
+            const user = await loginUser(trimmedEmail, password);
             if (rememberMe) {
-                localStorage.setItem('nextstep-remembered-email', email);
+                safeStorage.set('nextstep-remembered-email', trimmedEmail);
             } else {
-                localStorage.removeItem('nextstep-remembered-email');
+                safeStorage.remove('nextstep-remembered-email');
             }
-            const name = user.displayName || email.split('@')[0];
-            login(user.email ?? email, name, user.uid);
-            navigate('/dashboard');
+            const name = user.displayName || trimmedEmail.split('@')[0];
+            login(user.email ?? trimmedEmail, name, user.uid);
+            navigate('/dashboard', { replace: true });
         } catch (err: unknown) {
             const e = err as { code?: string };
             if (e.code === 'auth/invalid-credential') setError('E-posta veya şifre hatalı.');
             else if (e.code === 'auth/too-many-requests') setError('Çok fazla deneme. Lütfen bekleyin.');
+            else if (e.code === 'auth/network-request-failed') setError('Ağ bağlantısı yok. İnternetinizi kontrol edin.');
             else setError('Giriş yapılamadı. Tekrar deneyin.');
         } finally {
             setLoading(false);
@@ -95,7 +106,10 @@ const Login = () => {
                         <div>
                             <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-black/40">E-posta</label>
                             <input type="email" value={email} onChange={(e) => setEmail(e.target.value)}
-                                className="w-full rounded-xl border border-black/8 bg-[#fafafa] px-4 py-3.5 text-sm font-medium text-black outline-none transition-all placeholder:text-black/25 focus:border-orange-300 focus:bg-white focus:ring-2 focus:ring-orange-400/20"
+                                autoComplete="email" inputMode="email"
+                                pattern="[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}"
+                                title="Geçerli bir e-posta adresi girin"
+                                className="w-full rounded-xl border border-black/8 bg-[#fafafa] px-4 py-3.5 text-base sm:text-sm font-medium text-black outline-none transition-all placeholder:text-black/25 focus:border-orange-300 focus:bg-white focus:ring-2 focus:ring-orange-400/20"
                                 placeholder="ornek@email.com" required />
                         </div>
 
@@ -103,7 +117,8 @@ const Login = () => {
                             <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-black/40">Şifre</label>
                             <div className="relative">
                                 <input type={showPass ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)}
-                                    className="w-full rounded-xl border border-black/8 bg-[#fafafa] px-4 py-3.5 pr-12 text-sm font-medium text-black outline-none transition-all placeholder:text-black/25 focus:border-orange-300 focus:bg-white focus:ring-2 focus:ring-orange-400/20"
+                                    autoComplete="current-password" minLength={6}
+                                    className="w-full rounded-xl border border-black/8 bg-[#fafafa] px-4 py-3.5 pr-12 text-base sm:text-sm font-medium text-black outline-none transition-all placeholder:text-black/25 focus:border-orange-300 focus:bg-white focus:ring-2 focus:ring-orange-400/20"
                                     placeholder="••••••••" required />
                                 <button type="button" onClick={() => setShowPass(p => !p)}
                                     className="absolute right-4 top-1/2 -translate-y-1/2 text-black/30 hover:text-black/60 transition-colors" tabIndex={-1}>

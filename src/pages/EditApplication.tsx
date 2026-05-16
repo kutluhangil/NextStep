@@ -5,6 +5,7 @@ import { useAppStore } from '../store/useAppStore';
 import type { Application } from '../store/useAppStore';
 import { useLanguage } from '../lib/i18n';
 import { useDark } from '../hooks/useDark';
+import { useDocumentTitle } from '../hooks/useDocumentTitle';
 
 const fd = (d = 0) => ({
     initial: { opacity: 0, y: 20 },
@@ -49,6 +50,7 @@ const SelectWrap = ({ name, value, onChange, options, iCls, isDark }: {
 );
 
 const EditApplication = () => {
+    useDocumentTitle('Başvuru Düzenle');
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
     const updateApplicationAsync = useAppStore(state => state.updateApplicationAsync);
@@ -89,13 +91,23 @@ const EditApplication = () => {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!id || submitting) return;
+        // Trim string fields to block whitespace-only submissions
+        const trimmed: Partial<Application> = {};
+        (Object.keys(form) as (keyof Application)[]).forEach((k) => {
+            const v = form[k];
+            (trimmed as Record<string, unknown>)[k] = typeof v === 'string' ? v.trim() : v;
+        });
+        if (!trimmed.companyName || !trimmed.position) {
+            alert('Firma adı ve pozisyon zorunludur.');
+            return;
+        }
         setSubmitting(true);
         try {
-            await updateApplicationAsync(id, form);
+            await updateApplicationAsync(id, trimmed);
             setShowToast(true);
             setTimeout(() => { setShowToast(false); navigate('/applications'); }, 1700);
         } catch (error) {
-            console.error(error);
+            if (import.meta.env.DEV) console.error(error);
             alert("Güncellenirken bir problem oluştu. Lütfen bağlantınızı kontrol edin.");
             setSubmitting(false);
         }
@@ -161,10 +173,10 @@ const EditApplication = () => {
                     {/* ── 3. Maaş */}
                     <SectionCard title="Maaş Bilgisi" icon="💰" delay={0.14} isDark={isDark}>
                         <Field label="Min. Maaş" isDark={isDark}>
-                            <input name="salaryMin" type="text" value={form.salaryMin ?? ''} onChange={hc} placeholder="30.000" className={iCls} />
+                            <input name="salaryMin" type="text" inputMode="numeric" pattern="[0-9.]*" value={form.salaryMin ?? ''} onChange={(e) => setForm(p => ({ ...p, salaryMin: e.target.value.replace(/[^0-9.]/g, '') }))} placeholder="30.000" className={iCls} />
                         </Field>
                         <Field label="Max. Maaş" isDark={isDark}>
-                            <input name="salaryMax" type="text" value={form.salaryMax ?? ''} onChange={hc} placeholder="50.000" className={iCls} />
+                            <input name="salaryMax" type="text" inputMode="numeric" pattern="[0-9.]*" value={form.salaryMax ?? ''} onChange={(e) => setForm(p => ({ ...p, salaryMax: e.target.value.replace(/[^0-9.]/g, '') }))} placeholder="50.000" className={iCls} />
                         </Field>
                         <Field label="Para Birimi" isDark={isDark}>
                             <SelectWrap name="salaryCurrency" value={form.salaryCurrency ?? 'TRY'} onChange={hc} options={['TRY', 'USD', 'EUR', 'GBP']} iCls={iCls} isDark={isDark} />

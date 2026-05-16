@@ -2,6 +2,7 @@ import { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLanguage } from '../lib/i18n';
 import * as pdfjsLib from 'pdfjs-dist';
+import { useDocumentTitle } from '../hooks/useDocumentTitle';
 
 // Use bundled worker inline
 pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
@@ -111,6 +112,7 @@ const ScoreRing = ({ score }: { score: number }) => {
 
 // ── Main Component ─────────────────────────────────────────────────
 const CVPage = () => {
+    useDocumentTitle('CV Analizi');
     const { t, lang } = useLanguage();
     const [cvText, setCvText] = useState('');
     const [fileName, setFileName] = useState('');

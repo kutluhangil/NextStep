@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useAppStore } from '../store/useAppStore';
@@ -10,6 +10,7 @@ import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import { useDark } from '../hooks/useDark';
+import { useDocumentTitle } from '../hooks/useDocumentTitle';
 
 // ── Status colors ──────────────────────────────────────────────────
 const STATUS_COLOR: Record<string, { bg: string; text: string; border: string }> = {
@@ -134,6 +135,7 @@ const KanbanBoard = ({ apps, onSelect, onEdit, onDelete, isDark }: KanbanProps) 
 
 // ── Main Component ─────────────────────────────────────────────────
 const Applications = () => {
+    useDocumentTitle('Başvurular');
     const applications = useAppStore(state => state.applications);
     const updateApplicationAsync = useAppStore(state => state.updateApplicationAsync);
     const deleteApplicationAsync = useAppStore(state => state.deleteApplicationAsync);
@@ -149,6 +151,9 @@ const Applications = () => {
     const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
     const [deleting, setDeleting] = useState(false);
     const [updatingStatusId, setUpdatingStatusId] = useState<string | null>(null);
+    const [page, setPage] = useState(1);
+    const PAGE_SIZE = 10;
+    const [exporting, setExporting] = useState<null | 'excel' | 'pdf'>(null);
     const isDark = useDark();
     const importRef = useRef<HTMLInputElement>(null);
 
@@ -171,11 +176,15 @@ const Applications = () => {
     };
 
     const filteredApps = useMemo(() => {
+        const q = searchTerm.trim().toLowerCase();
         return applications
             .filter(app => {
-                const matchesSearch =
-                    app.companyName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                    app.position.toLowerCase().includes(searchTerm.toLowerCase());
+                // Extended search: company, position, department, city, platform, hrName
+                const haystack = [
+                    app.companyName, app.position, app.department,
+                    app.city, app.platform, app.hrName,
+                ].map(s => (s ?? '').toLowerCase()).join(' ');
+                const matchesSearch = q ? haystack.includes(q) : true;
                 const matchesStatus = statusFilter ? app.status === statusFilter : true;
                 const matchesTag = tagFilter
                     ? (app.tags ?? '').toLowerCase().split(',').some(t => t.trim().includes(tagFilter.toLowerCase()))
@@ -194,6 +203,17 @@ const Applications = () => {
                 }
             });
     }, [applications, searchTerm, statusFilter, tagFilter, sortField, sortOrder]);
+
+    // Reset page when filter/sort/view changes
+    useEffect(() => { setPage(1); }, [searchTerm, statusFilter, tagFilter, sortField, sortOrder, viewMode]);
+
+    const totalPages = Math.max(1, Math.ceil(filteredApps.length / PAGE_SIZE));
+    const safePage = Math.min(page, totalPages);
+    const pagedApps = useMemo(
+        () => filteredApps.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE),
+        [filteredApps, safePage]
+    );
+    const hasFilter = !!(searchTerm.trim() || statusFilter || tagFilter.trim());
 
     const handleStatusChange = async (id: string, newStatus: ApplicationStatus) => {
         setUpdatingStatusId(id);
@@ -215,38 +235,53 @@ const Applications = () => {
         }
     };
 
-    const exportToExcel = () => {
-        const ws = XLSX.utils.json_to_sheet(filteredApps.map(app => ({
-            No: app.no,
-            Firma: app.companyName,
-            Pozisyon: app.position,
-            Tarih: new Date(app.date).toLocaleDateString('tr-TR'),
-            Durum: app.status,
-            Platform: app.platform,
-            CvVersiyonu: app.cvVersion,
-            Notlar: app.motivation,
-            Etiketler: app.tags,
-        })));
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Basvurular");
-        XLSX.writeFile(wb, "nextstep_basvurular.xlsx");
+    const exportToExcel = async () => {
+        if (exporting) return;
+        setExporting('excel');
+        // yield to the event loop so the UI updates before sync XLSX call blocks
+        await new Promise(r => setTimeout(r, 0));
+        try {
+            const ws = XLSX.utils.json_to_sheet(filteredApps.map(app => ({
+                No: app.no,
+                Firma: app.companyName,
+                Pozisyon: app.position,
+                Tarih: new Date(app.date).toLocaleDateString('tr-TR'),
+                Durum: app.status,
+                Platform: app.platform,
+                CvVersiyonu: app.cvVersion,
+                Notlar: app.motivation,
+                Etiketler: app.tags,
+            })));
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Basvurular");
+            XLSX.writeFile(wb, "nextstep_basvurular.xlsx");
+        } finally {
+            setExporting(null);
+        }
     };
 
-    const exportToPDF = () => {
-        const doc = new jsPDF();
-        doc.text("NextStep Is Basvuru Raporu", 14, 15);
-        const tableData = filteredApps.map(app => [
-            app.no, app.companyName, app.position,
-            new Date(app.date).toLocaleDateString('tr-TR'), app.status, app.platform,
-        ]);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (doc as any).autoTable({
-            head: [['No', 'Firma', 'Pozisyon', 'Tarih', 'Durum', 'Platform']],
-            body: tableData, startY: 20, theme: 'grid',
-            styles: { fontSize: 8, font: 'helvetica' },
-            headStyles: { fillColor: [99, 102, 241] },
-        });
-        doc.save("nextstep_basvurular.pdf");
+    const exportToPDF = async () => {
+        if (exporting) return;
+        setExporting('pdf');
+        await new Promise(r => setTimeout(r, 0));
+        try {
+            const doc = new jsPDF();
+            doc.text("NextStep Is Basvuru Raporu", 14, 15);
+            const tableData = filteredApps.map(app => [
+                app.no, app.companyName, app.position,
+                new Date(app.date).toLocaleDateString('tr-TR'), app.status, app.platform,
+            ]);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (doc as any).autoTable({
+                head: [['No', 'Firma', 'Pozisyon', 'Tarih', 'Durum', 'Platform']],
+                body: tableData, startY: 20, theme: 'grid',
+                styles: { fontSize: 8, font: 'helvetica' },
+                headStyles: { fillColor: [99, 102, 241] },
+            });
+            doc.save("nextstep_basvurular.pdf");
+        } finally {
+            setExporting(null);
+        }
     };
 
     return (
@@ -263,13 +298,17 @@ const Applications = () => {
                             </h1>
                         </div>
                         <div className="flex items-center gap-2 mt-4 ml-4">
-                            <button onClick={exportToExcel}
-                                className="flex items-center gap-2 rounded-full bg-emerald-50 px-4 py-2 text-sm font-medium text-emerald-600 transition-colors hover:bg-emerald-100">
-                                <Download size={14} /> EXCEL
+                            <button onClick={exportToExcel} disabled={exporting !== null || filteredApps.length === 0}
+                                className="flex items-center gap-2 rounded-full bg-emerald-50 px-4 py-2 text-sm font-medium text-emerald-600 transition-colors hover:bg-emerald-100 disabled:opacity-50 disabled:cursor-not-allowed">
+                                {exporting === 'excel'
+                                    ? <><div className="w-3.5 h-3.5 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin" /> Hazırlanıyor</>
+                                    : <><Download size={14} /> EXCEL</>}
                             </button>
-                            <button onClick={exportToPDF}
-                                className="flex items-center gap-2 rounded-full bg-rose-50 px-4 py-2 text-sm font-medium text-rose-600 transition-colors hover:bg-rose-100">
-                                <Download size={14} /> PDF
+                            <button onClick={exportToPDF} disabled={exporting !== null || filteredApps.length === 0}
+                                className="flex items-center gap-2 rounded-full bg-rose-50 px-4 py-2 text-sm font-medium text-rose-600 transition-colors hover:bg-rose-100 disabled:opacity-50 disabled:cursor-not-allowed">
+                                {exporting === 'pdf'
+                                    ? <><div className="w-3.5 h-3.5 border-2 border-rose-600 border-t-transparent rounded-full animate-spin" /> Hazırlanıyor</>
+                                    : <><Download size={14} /> PDF</>}
                             </button>
                         </div>
                     </div>
@@ -366,11 +405,25 @@ const Applications = () => {
                         <div className="flex flex-col gap-4">
                             <AnimatePresence>
                                 {filteredApps.length === 0 ? (
-                                    <div className="text-center py-12 text-black/50 bg-white rounded-3xl border border-black/5">
-                                        Başvuru bulunamadı.
+                                    <div className="text-center py-16 px-6 text-black/50 bg-white rounded-3xl border border-black/5">
+                                        <div className="text-4xl mb-3">{hasFilter ? '🔍' : '📭'}</div>
+                                        <p className="font-bold text-black/70 mb-1">
+                                            {hasFilter ? 'Sonuç bulunamadı' : 'Henüz başvuru eklemediniz'}
+                                        </p>
+                                        <p className="text-sm text-black/40">
+                                            {hasFilter
+                                                ? 'Filtreleri sıfırlayıp tekrar deneyin.'
+                                                : 'İlk başvurunuzu eklemek için Ekle butonunu kullanın.'}
+                                        </p>
+                                        {hasFilter && (
+                                            <button onClick={() => { setSearchTerm(''); setStatusFilter(''); setTagFilter(''); }}
+                                                className="mt-5 rounded-full border border-black/10 px-5 py-2 text-xs font-bold text-black/70 hover:bg-black/5 transition-all">
+                                                Filtreleri Temizle
+                                            </button>
+                                        )}
                                     </div>
                                 ) : (
-                                    filteredApps.map((app, index) => (
+                                    pagedApps.map((app, index) => (
                                         <motion.div
                                             key={app.id}
                                             initial={{ opacity: 0, y: 10 }}
@@ -478,6 +531,48 @@ const Applications = () => {
                                 )}
                             </AnimatePresence>
                         </div>
+
+                        {/* ── Pagination ───────────────────────────────── */}
+                        {filteredApps.length > PAGE_SIZE && (
+                            <div className="flex items-center justify-between gap-3 flex-wrap pt-4 mt-2 border-t border-black/5">
+                                <p className={`text-xs ${subText}`}>
+                                    <span className="font-semibold">{(safePage - 1) * PAGE_SIZE + 1}–{Math.min(safePage * PAGE_SIZE, filteredApps.length)}</span>
+                                    {' / '}
+                                    <span className="font-semibold">{filteredApps.length}</span> başvuru
+                                </p>
+                                <div className="flex items-center gap-1.5">
+                                    <button onClick={() => setPage(p => Math.max(1, p - 1))}
+                                        disabled={safePage === 1}
+                                        className={`min-w-[40px] h-10 rounded-full border text-xs font-bold transition-all disabled:opacity-30 disabled:cursor-not-allowed ${isDark ? 'border-white/10 text-white/70 hover:bg-white/5' : 'border-black/10 text-black/70 hover:bg-black/5'}`}>
+                                        ←
+                                    </button>
+                                    {Array.from({ length: totalPages }, (_, i) => i + 1)
+                                        .filter(p => p === 1 || p === totalPages || Math.abs(p - safePage) <= 1)
+                                        .map((p, idx, arr) => (
+                                            <span key={p} className="flex items-center">
+                                                {idx > 0 && arr[idx - 1] !== p - 1 && (
+                                                    <span className={`px-1.5 text-xs ${subText}`}>···</span>
+                                                )}
+                                                <button onClick={() => setPage(p)}
+                                                    className={`min-w-[40px] h-10 rounded-full text-xs font-bold transition-all ${
+                                                        safePage === p
+                                                            ? 'bg-gradient-to-r from-indigo-500 to-pink-500 text-white shadow-md'
+                                                            : isDark
+                                                                ? 'border border-white/10 text-white/70 hover:bg-white/5'
+                                                                : 'border border-black/10 text-black/70 hover:bg-black/5'
+                                                    }`}>
+                                                    {p}
+                                                </button>
+                                            </span>
+                                        ))}
+                                    <button onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                                        disabled={safePage === totalPages}
+                                        className={`min-w-[40px] h-10 rounded-full border text-xs font-bold transition-all disabled:opacity-30 disabled:cursor-not-allowed ${isDark ? 'border-white/10 text-white/70 hover:bg-white/5' : 'border-black/10 text-black/70 hover:bg-black/5'}`}>
+                                        →
+                                    </button>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </Reveal>
             )}
@@ -495,11 +590,13 @@ const Applications = () => {
                             animate={{ scale: 1, opacity: 1, y: 0 }}
                             exit={{ scale: 0.95, opacity: 0, y: 20 }}
                             transition={{ type: "spring", duration: 0.5 }}
-                            className={`relative w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-[32px] p-8 shadow-2xl ${modalBg}`}
+                            className={`relative w-full max-w-2xl max-h-[85vh] sm:max-h-[90vh] overflow-y-auto rounded-3xl sm:rounded-[32px] p-5 sm:p-8 shadow-2xl ${modalBg}`}
                             onClick={e => e.stopPropagation()}
+                            style={{ maxHeight: '85dvh' as React.CSSProperties['maxHeight'] }}
                         >
                             <button onClick={() => setSelectedApp(null)}
-                                className="absolute top-6 right-6 p-2 rounded-full bg-black/5 hover:bg-black/10 transition-colors">
+                                aria-label="Kapat"
+                                className="absolute top-3 right-3 sm:top-6 sm:right-6 w-11 h-11 sm:w-10 sm:h-10 rounded-full bg-black/5 hover:bg-black/10 transition-colors flex items-center justify-center">
                                 <X size={20} className="text-black/70" />
                             </button>
 

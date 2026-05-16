@@ -25,7 +25,8 @@ export function FloatingDock() {
     const handleLogout = async () => {
         await logoutUser();
         logout();
-        navigate('/');
+        // replace history so back button can't return to protected pages
+        navigate('/', { replace: true });
     };
 
     return (
