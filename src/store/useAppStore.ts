@@ -114,9 +114,15 @@ interface AppState {
     deleteApplicationAsync: (id: string) => Promise<void>;
     fetchApplications: () => Promise<void>;
     wipeApplications: () => Promise<void>;
+    saveCVAnalysisAsync: (cv: CVAnalysis) => Promise<void>;
+    deleteCVAnalysisAsync: () => Promise<void>;
+    fetchCVAnalysis: () => Promise<void>;
 }
 
-import { addApplicationFS, updateApplicationFS, deleteApplicationFS, getApplicationsFS, wipeUserApplicationsFS } from '../lib/firestoreService';
+import {
+    addApplicationFS, updateApplicationFS, deleteApplicationFS, getApplicationsFS, wipeUserApplicationsFS,
+    saveCVAnalysisFS, getCVAnalysisFS, deleteCVAnalysisFS,
+} from '../lib/firestoreService';
 
 export const useAppStore = create<AppState>()(
     persist(
@@ -140,11 +146,18 @@ export const useAppStore = create<AppState>()(
                 set({ isAuthenticated: false, firebaseUid: null, user: null, applications: [], cvAnalysis: null }),
 
             setCVAnalysis: (cv) => set({ cvAnalysis: cv }),
-            appendGeminiTurn: (q, a) =>
-                set((state) => state.cvAnalysis
-                    ? { cvAnalysis: { ...state.cvAnalysis, geminiHistory: [...state.cvAnalysis.geminiHistory, { q, a }] } }
-                    : {}
-                ),
+            appendGeminiTurn: (q, a) => {
+                const { cvAnalysis, firebaseUid } = get();
+                if (!cvAnalysis) return;
+                const updated = { ...cvAnalysis, geminiHistory: [...cvAnalysis.geminiHistory, { q, a }] };
+                set({ cvAnalysis: updated });
+                // Fire-and-forget cloud sync — local state already updated for instant UI feedback
+                if (firebaseUid) {
+                    saveCVAnalysisFS(firebaseUid, updated).catch(e => {
+                        if (import.meta.env.DEV) console.error('Gemini history sync failed', e);
+                    });
+                }
+            },
 
             addApplication: (appData: Omit<Application, 'id' | 'no' | 'createdAt'>) =>
                 set((state) => {
@@ -199,9 +212,13 @@ export const useAppStore = create<AppState>()(
 
             fetchApplications: async () => {
                 const { firebaseUid } = get();
-                if (firebaseUid) {
+                if (!firebaseUid) return;
+                try {
                     const apps = await getApplicationsFS(firebaseUid);
                     set({ applications: apps });
+                } catch (e) {
+                    if (import.meta.env.DEV) console.error('fetchApplications failed', e);
+                    // Keep whatever is already in state — don't blank the UI on transient errors.
                 }
             },
 
@@ -209,9 +226,46 @@ export const useAppStore = create<AppState>()(
                 const { firebaseUid } = get();
                 if (firebaseUid) {
                     await wipeUserApplicationsFS(firebaseUid);
-                    set({ applications: [] });
+                    await deleteCVAnalysisFS(firebaseUid);
+                    set({ applications: [], cvAnalysis: null });
                 }
-            }
+            },
+
+            // ── CV Analysis async actions ─────────────────────────
+            saveCVAnalysisAsync: async (cv) => {
+                const { firebaseUid } = get();
+                set({ cvAnalysis: cv });
+                if (firebaseUid) {
+                    try {
+                        await saveCVAnalysisFS(firebaseUid, cv);
+                    } catch (e) {
+                        if (import.meta.env.DEV) console.error('saveCVAnalysis failed', e);
+                    }
+                }
+            },
+
+            deleteCVAnalysisAsync: async () => {
+                const { firebaseUid } = get();
+                set({ cvAnalysis: null });
+                if (firebaseUid) {
+                    try {
+                        await deleteCVAnalysisFS(firebaseUid);
+                    } catch (e) {
+                        if (import.meta.env.DEV) console.error('deleteCVAnalysis failed', e);
+                    }
+                }
+            },
+
+            fetchCVAnalysis: async () => {
+                const { firebaseUid } = get();
+                if (!firebaseUid) return;
+                try {
+                    const cv = await getCVAnalysisFS(firebaseUid);
+                    if (cv) set({ cvAnalysis: cv });
+                } catch (e) {
+                    if (import.meta.env.DEV) console.error('fetchCVAnalysis failed', e);
+                }
+            },
         }),
         {
             name: 'nextstep-storage',

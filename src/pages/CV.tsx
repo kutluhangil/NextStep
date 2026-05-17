@@ -4,6 +4,7 @@ import { useLanguage } from '../lib/i18n';
 import * as pdfjsLib from 'pdfjs-dist';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import { useAppStore } from '../store/useAppStore';
+import { useDark } from '../hooks/useDark';
 import { Trash2 } from 'lucide-react';
 
 // Use bundled worker inline
@@ -93,20 +94,20 @@ function parseCVSections(text: string): Record<string, string> {
 }
 
 // ── Score Ring ─────────────────────────────────────────────────────
-const ScoreRing = ({ score }: { score: number }) => {
+const ScoreRing = ({ score, isDark }: { score: number; isDark?: boolean }) => {
     const r = 52, c = 2 * Math.PI * r;
     const color = score >= 75 ? '#22c55e' : score >= 50 ? '#f59e0b' : '#ef4444';
     return (
         <div className="relative flex items-center justify-center w-36 h-36">
             <svg viewBox="0 0 120 120" className="w-36 h-36 -rotate-90">
-                <circle cx="60" cy="60" r={r} strokeWidth="10" stroke="rgba(0,0,0,0.06)" fill="none" />
+                <circle cx="60" cy="60" r={r} strokeWidth="10" stroke={isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'} fill="none" />
                 <circle cx="60" cy="60" r={r} strokeWidth="10" stroke={color} fill="none" strokeLinecap="round"
                     strokeDasharray={c} strokeDashoffset={c - (score / 100) * c}
                     style={{ transition: 'stroke-dashoffset 1.5s ease' }} />
             </svg>
             <div className="absolute text-center">
                 <div className="text-3xl font-black" style={{ color }}>{score}</div>
-                <div className="text-xs font-bold text-black/50">/ 100</div>
+                <div className={`text-xs font-bold ${isDark ? 'text-white/60' : 'text-black/55'}`}>/ 100</div>
             </div>
         </div>
     );
@@ -117,8 +118,12 @@ const CVPage = () => {
     useDocumentTitle('CV Analizi');
     const { t, lang } = useLanguage();
     const cvAnalysis = useAppStore(s => s.cvAnalysis);
-    const setCVAnalysis = useAppStore(s => s.setCVAnalysis);
+    const saveCVAnalysisAsync = useAppStore(s => s.saveCVAnalysisAsync);
+    const deleteCVAnalysisAsync = useAppStore(s => s.deleteCVAnalysisAsync);
     const appendGeminiTurn = useAppStore(s => s.appendGeminiTurn);
+    const setCVAnalysis = useAppStore(s => s.setCVAnalysis);
+    const firebaseUid = useAppStore(s => s.firebaseUid);
+    const isDark = useDark();
 
     const [loading, setLoading] = useState(false);
     const [geminiMsg, setGeminiMsg] = useState('');
@@ -150,17 +155,22 @@ const CVPage = () => {
             }
             const parsedSections = parseCVSections(fullText);
             const ats = computeATSScore(fullText);
-            // Persist to store so it survives navigation
-            setCVAnalysis({
+            // Persist to store (local) and Firestore (cloud) so it survives navigation AND re-login
+            const cv = {
                 fileName: file.name,
                 cvText: fullText,
                 sections: parsedSections,
                 atsScore: ats.score,
                 atsBreakdown: ats.breakdown,
                 atsTips: ats.tips,
-                geminiHistory: [],
+                geminiHistory: [] as { q: string; a: string }[],
                 uploadedAt: Date.now(),
-            });
+            };
+            if (firebaseUid) {
+                await saveCVAnalysisAsync(cv);
+            } else {
+                setCVAnalysis(cv);
+            }
         } catch {
             setErrorMsg(lang === 'tr' ? 'PDF okunamadı. Lütfen farklı bir dosya deneyin.' : 'Could not read PDF. Please try a different file.');
         } finally {
@@ -180,8 +190,12 @@ const CVPage = () => {
         processPDF(f);
     };
 
-    const handleClearCV = () => {
-        setCVAnalysis(null);
+    const handleClearCV = async () => {
+        if (firebaseUid) {
+            await deleteCVAnalysisAsync();
+        } else {
+            setCVAnalysis(null);
+        }
         setGeminiMsg('');
         setErrorMsg('');
         if (fileRef.current) fileRef.current.value = '';
@@ -202,15 +216,26 @@ const CVPage = () => {
         }
     };
 
+    // Theme-aware classes
+    const cardCls = isDark ? 'bg-[#1c1c1e] border-white/5' : 'bg-white border-black/5';
+    const sectionCls = isDark ? 'bg-white/[0.03] border-white/5' : 'bg-[#fafafa] border-black/5';
+    const titleCls = isDark ? 'text-white' : 'text-[#1d1d1f]';
+    const subCls = isDark ? 'text-white/70' : 'text-black/60';
+    const mutedCls = isDark ? 'text-white/60' : 'text-black/55';
+    const dropzoneCls = isDark
+        ? 'border-white/15 bg-white/[0.03] hover:border-orange-400 hover:bg-orange-500/10'
+        : 'border-black/10 bg-white hover:border-orange-300 hover:bg-orange-50/30';
+    const dropzoneActiveCls = isDark ? 'border-orange-400 bg-orange-500/15' : 'border-orange-400 bg-orange-50/50';
+
     return (
-        <div className="w-full min-h-screen bg-[#f8f8fa]">
+        <div className={`w-full min-h-screen ${isDark ? 'bg-[#0d0d0f]' : 'bg-[#f8f8fa]'}`}>
             <div className="mx-auto max-w-[1000px] px-4 sm:px-6 pt-20 sm:pt-24 pb-32">
 
                 {/* Header */}
                 <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="mb-8 sm:mb-10">
-                    <p className="text-xs font-bold tracking-[0.18em] text-black/60 uppercase mb-2">CV</p>
-                    <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-[#1d1d1f] mb-2">{t('cv.title')}</h1>
-                    <p className="text-sm text-black/50">{t('cv.subtitle')}</p>
+                    <p className={`text-xs font-bold tracking-[0.18em] uppercase mb-2 ${subCls}`}>CV</p>
+                    <h1 className={`text-3xl sm:text-4xl font-bold tracking-tight mb-2 ${titleCls}`}>{t('cv.title')}</h1>
+                    <p className={`text-sm ${mutedCls}`}>{t('cv.subtitle')}</p>
                 </motion.div>
 
                 {/* Upload Zone */}
@@ -219,7 +244,7 @@ const CVPage = () => {
                     onDragLeave={() => setDragOver(false)}
                     onDrop={e => { e.preventDefault(); setDragOver(false); const f = e.dataTransfer.files[0]; if (f) handleFile(f); }}
                     onClick={() => { if (!fileName) fileRef.current?.click(); }}
-                    className={`relative group rounded-3xl border-2 border-dashed transition-all p-10 sm:p-16 text-center mb-6 ${fileName ? 'cursor-default' : 'cursor-pointer'} ${dragOver ? 'border-orange-400 bg-orange-50/50' : 'border-black/10 bg-white hover:border-orange-300 hover:bg-orange-50/30'}`}
+                    className={`relative group rounded-3xl border-2 border-dashed transition-all p-10 sm:p-16 text-center mb-6 ${fileName ? 'cursor-default' : 'cursor-pointer'} ${dragOver ? dropzoneActiveCls : dropzoneCls}`}
                 >
                     <input ref={fileRef} type="file" accept=".pdf" className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f) handleFile(f); }} />
                     {loading ? (
@@ -228,34 +253,34 @@ const CVPage = () => {
                                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                             </svg>
-                            <p className="text-sm font-medium text-black/50">{t('cv.analyzing')}</p>
+                            <p className={`text-sm font-medium ${mutedCls}`}>{t('cv.analyzing')}</p>
                         </div>
                     ) : fileName ? (
                         <div className="flex flex-col items-center gap-3">
-                            <div className="w-12 h-12 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-2xl">✅</div>
-                            <p className="text-sm font-bold text-[#1d1d1f]">{fileName}</p>
+                            <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-2xl ${isDark ? 'bg-emerald-500/15 border border-emerald-500/30' : 'bg-emerald-50 border border-emerald-200'}`}>✅</div>
+                            <p className={`text-sm font-bold ${titleCls}`}>{fileName}</p>
                             {cvAnalysis?.uploadedAt && (
-                                <p className="text-xs text-black/60">
+                                <p className={`text-xs ${subCls}`}>
                                     {lang === 'tr' ? 'Yüklenme: ' : 'Uploaded: '}
                                     {new Date(cvAnalysis.uploadedAt).toLocaleString(lang === 'tr' ? 'tr-TR' : 'en-US', { dateStyle: 'medium', timeStyle: 'short' })}
                                 </p>
                             )}
                             <div className="flex flex-wrap gap-2 mt-3 justify-center">
                                 <button type="button" onClick={(e) => { e.stopPropagation(); fileRef.current?.click(); }}
-                                    className="rounded-full bg-orange-50 border border-orange-200 text-orange-600 px-4 py-2 text-xs font-bold hover:bg-orange-100 transition-all">
+                                    className={`rounded-full border px-4 py-2 text-xs font-bold transition-all ${isDark ? 'bg-orange-500/15 border-orange-500/30 text-orange-400 hover:bg-orange-500/25' : 'bg-orange-50 border-orange-200 text-orange-600 hover:bg-orange-100'}`}>
                                     {lang === 'tr' ? 'Farklı CV Yükle' : 'Upload Different CV'}
                                 </button>
                                 <button type="button" onClick={(e) => { e.stopPropagation(); handleClearCV(); }}
-                                    className="flex items-center gap-1.5 rounded-full bg-rose-50 border border-rose-200 text-rose-600 px-4 py-2 text-xs font-bold hover:bg-rose-100 transition-all">
+                                    className={`flex items-center gap-1.5 rounded-full border px-4 py-2 text-xs font-bold transition-all ${isDark ? 'bg-rose-500/15 border-rose-500/30 text-rose-400 hover:bg-rose-500/25' : 'bg-rose-50 border-rose-200 text-rose-600 hover:bg-rose-100'}`}>
                                     <Trash2 size={12} /> {lang === 'tr' ? 'CV\'yi Kaldır' : 'Remove CV'}
                                 </button>
                             </div>
                         </div>
                     ) : (
                         <div className="flex flex-col items-center gap-3">
-                            <div className="w-14 h-14 rounded-2xl bg-black/5 flex items-center justify-center text-3xl group-hover:scale-110 transition-transform">📄</div>
-                            <p className="text-base font-semibold text-[#1d1d1f]">{t('cv.dropzone')}</p>
-                            <p className="text-xs text-black/60">PDF • Maks. 10MB</p>
+                            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-3xl group-hover:scale-110 transition-transform ${isDark ? 'bg-white/5' : 'bg-black/5'}`}>📄</div>
+                            <p className={`text-base font-semibold ${titleCls}`}>{t('cv.dropzone')}</p>
+                            <p className={`text-xs ${subCls}`}>PDF • Maks. 10MB</p>
                         </div>
                     )}
                 </motion.div>
@@ -263,7 +288,7 @@ const CVPage = () => {
                 {/* Error message */}
                 {errorMsg && (
                     <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}
-                        className="rounded-2xl bg-rose-50 border border-rose-200 text-rose-700 px-5 py-3 text-sm font-semibold flex items-center gap-2 mb-5"
+                        className={`rounded-2xl border px-5 py-3 text-sm font-semibold flex items-center gap-2 mb-5 ${isDark ? 'bg-rose-500/10 border-rose-500/30 text-rose-300' : 'bg-rose-50 border-rose-200 text-rose-700'}`}
                         role="alert">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                             <circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" />
@@ -279,10 +304,10 @@ const CVPage = () => {
                             className="flex flex-col gap-5">
 
                             {/* ATS Score */}
-                            <div className="bg-white rounded-3xl border border-black/5 shadow-[0_2px_24px_#00000008] p-6 sm:p-8">
-                                <h3 className="text-base font-bold text-[#1d1d1f] mb-6">{t('cv.atsScore')}</h3>
+                            <div className={`rounded-3xl border shadow-[0_2px_24px_#00000008] p-6 sm:p-8 ${cardCls}`}>
+                                <h3 className={`text-base font-bold mb-6 ${titleCls}`}>{t('cv.atsScore')}</h3>
                                 <div className="flex flex-col sm:flex-row items-center sm:items-start gap-8">
-                                    <ScoreRing score={atsResult.score} />
+                                    <ScoreRing score={atsResult.score} isDark={isDark} />
                                     <div className="flex-1 w-full">
                                         <div className="space-y-3 mb-5">
                                             {Object.entries(atsResult.breakdown).map(([k, v]) => {
@@ -296,10 +321,10 @@ const CVPage = () => {
                                                 const max = maxMap[k] ?? 30;
                                                 return (
                                                     <div key={k}>
-                                                        <div className="flex justify-between text-xs font-medium text-black/60 mb-1">
+                                                        <div className={`flex justify-between text-xs font-medium mb-1 ${subCls}`}>
                                                             <span>{k}</span><span>{v} / {max}</span>
                                                         </div>
-                                                        <div className="h-2 rounded-full bg-black/5 overflow-hidden">
+                                                        <div className={`h-2 rounded-full overflow-hidden ${isDark ? 'bg-white/8' : 'bg-black/5'}`}>
                                                             <motion.div className="h-full rounded-full"
                                                                 initial={{ width: 0 }}
                                                                 animate={{ width: `${Math.min((v / max) * 100, 100)}%` }}
@@ -311,11 +336,11 @@ const CVPage = () => {
                                             })}
                                         </div>
                                         {atsResult.tips.length > 0 && (
-                                            <div className="rounded-2xl bg-amber-50 border border-amber-100 p-4">
-                                                <p className="text-xs font-bold text-amber-700 mb-2">💡 {lang === 'tr' ? 'İyileştirme Önerileri' : 'Suggestions'}</p>
+                                            <div className={`rounded-2xl border p-4 ${isDark ? 'bg-amber-500/10 border-amber-500/20' : 'bg-amber-50 border-amber-100'}`}>
+                                                <p className={`text-xs font-bold mb-2 ${isDark ? 'text-amber-300' : 'text-amber-700'}`}>💡 {lang === 'tr' ? 'İyileştirme Önerileri' : 'Suggestions'}</p>
                                                 <ul className="space-y-1">
                                                     {atsResult.tips.map((tip, i) => (
-                                                        <li key={i} className="text-xs text-amber-600 flex items-start gap-2">
+                                                        <li key={i} className={`text-xs flex items-start gap-2 ${isDark ? 'text-amber-200' : 'text-amber-600'}`}>
                                                             <span className="mt-0.5 flex-shrink-0">→</span>{tip}
                                                         </li>
                                                     ))}
@@ -328,16 +353,16 @@ const CVPage = () => {
 
                             {/* CV Sections */}
                             {Object.entries(sections).filter(([, v]) => v.trim().length > 10).length > 0 && (
-                                <div className="bg-white rounded-3xl border border-black/5 shadow-[0_2px_24px_#00000008] p-6 sm:p-8">
-                                    <h3 className="text-base font-bold text-[#1d1d1f] mb-5">{lang === 'tr' ? 'CV Bölümleri' : 'CV Sections'}</h3>
+                                <div className={`rounded-3xl border shadow-[0_2px_24px_#00000008] p-6 sm:p-8 ${cardCls}`}>
+                                    <h3 className={`text-base font-bold mb-5 ${titleCls}`}>{lang === 'tr' ? 'CV Bölümleri' : 'CV Sections'}</h3>
                                     <div className="space-y-4">
                                         {Object.entries(sections).filter(([, v]) => v.trim().length > 10).map(([section, content]) => (
-                                            <details key={section} className="group rounded-2xl bg-[#fafafa] border border-black/5 overflow-hidden">
-                                                <summary className="flex justify-between items-center px-5 py-4 cursor-pointer font-semibold text-sm text-[#1d1d1f] list-none">
+                                            <details key={section} className={`group rounded-2xl border overflow-hidden ${sectionCls}`}>
+                                                <summary className={`flex justify-between items-center px-5 py-4 cursor-pointer font-semibold text-sm list-none ${titleCls}`}>
                                                     {section || 'Genel'}
-                                                    <svg className="w-4 h-4 text-black/60 group-open:rotate-180 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
+                                                    <svg className={`w-4 h-4 group-open:rotate-180 transition-transform ${subCls}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
                                                 </summary>
-                                                <pre className="px-5 pb-4 text-xs text-black/60 leading-relaxed whitespace-pre-wrap font-sans">{content.trim()}</pre>
+                                                <pre className={`px-5 pb-4 text-xs leading-relaxed whitespace-pre-wrap font-sans ${subCls}`}>{content.trim()}</pre>
                                             </details>
                                         ))}
                                     </div>
@@ -345,21 +370,21 @@ const CVPage = () => {
                             )}
 
                             {/* Ask Gemini */}
-                            <div className="bg-white rounded-3xl border border-black/5 shadow-[0_2px_24px_#00000008] p-6 sm:p-8">
+                            <div className={`rounded-3xl border shadow-[0_2px_24px_#00000008] p-6 sm:p-8 ${cardCls}`}>
                                 <div className="flex items-center gap-3 mb-5">
                                     <div className="w-9 h-9 rounded-2xl flex items-center justify-center text-xl" style={{ background: 'linear-gradient(135deg, #4285f4, #db4437, #f4b400, #0f9d58)' }}>
                                         <span className="text-white font-bold text-sm">G</span>
                                     </div>
                                     <div>
-                                        <h3 className="text-base font-bold text-[#1d1d1f]">{t('cv.askGemini')}</h3>
-                                        <p className="text-xs text-black/60">{lang === 'tr' ? 'CV hakkında Gemini\'ye soru sorun' : 'Ask Gemini about your CV'}</p>
+                                        <h3 className={`text-base font-bold ${titleCls}`}>{t('cv.askGemini')}</h3>
+                                        <p className={`text-xs ${subCls}`}>{lang === 'tr' ? 'CV hakkında Gemini\'ye soru sorun' : 'Ask Gemini about your CV'}</p>
                                     </div>
                                 </div>
                                 <div className="flex flex-col sm:flex-row gap-3">
                                     <input type="text" value={geminiMsg} onChange={e => setGeminiMsg(e.target.value)}
                                         onKeyDown={e => { if (e.key === 'Enter') handleGemini(); }}
                                         placeholder={t('cv.geminiPlaceholder')}
-                                        className="flex-1 rounded-xl border border-black/8 bg-[#fafafa] px-4 py-3 text-sm font-medium text-black focus:outline-none focus:ring-2 focus:ring-orange-400/30 focus:border-orange-300" />
+                                        className={`flex-1 rounded-xl border px-4 py-3 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-orange-400/30 focus:border-orange-300 ${isDark ? 'border-white/8 bg-white/5 text-white placeholder:text-white/45' : 'border-black/8 bg-[#fafafa] text-black placeholder:text-black/45'}`} />
                                     <button onClick={handleGemini} disabled={!geminiMsg.trim() || geminiLoading}
                                         className="w-full sm:w-auto rounded-xl px-6 py-3 text-sm font-bold text-white transition-all hover:-translate-y-0.5 disabled:opacity-50"
                                         style={{ background: 'linear-gradient(135deg, #f97316, #14b8a6)' }}>
@@ -376,16 +401,16 @@ const CVPage = () => {
                                                     style={{ background: 'linear-gradient(135deg, #f97316, #14b8a6)' }}>
                                                     {turn.q}
                                                 </div>
-                                                <div className="rounded-2xl bg-[#fafafa] border border-black/5 p-4 text-sm text-black/75 leading-relaxed whitespace-pre-wrap">
+                                                <div className={`rounded-2xl border p-4 text-sm leading-relaxed whitespace-pre-wrap ${isDark ? 'bg-white/5 border-white/8 text-white/80' : 'bg-[#fafafa] border-black/5 text-black/75'}`}>
                                                     {turn.a}
                                                 </div>
                                             </motion.div>
                                         ))}
                                         {geminiLoading && (
-                                            <div className="rounded-2xl bg-[#fafafa] border border-black/5 p-4 flex items-center gap-1.5">
+                                            <div className={`rounded-2xl border p-4 flex items-center gap-1.5 ${isDark ? 'bg-white/5 border-white/8' : 'bg-[#fafafa] border-black/5'}`}>
                                                 {[0, 1, 2].map(i => (
                                                     <motion.div key={i} animate={{ y: [0, -4, 0] }} transition={{ duration: 0.8, repeat: Infinity, delay: i * 0.15 }}
-                                                        className="w-1.5 h-1.5 rounded-full bg-black/30" />
+                                                        className={`w-1.5 h-1.5 rounded-full ${isDark ? 'bg-white/40' : 'bg-black/30'}`} />
                                                 ))}
                                             </div>
                                         )}

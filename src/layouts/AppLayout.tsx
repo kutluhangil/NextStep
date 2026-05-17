@@ -3,15 +3,16 @@ import { FloatingDock } from '../components/common/FloatingDock';
 import { GeminiWidget } from '../components/common/GeminiWidget';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useTheme } from '../hooks/useTheme';
+import { useDark } from '../hooks/useDark';
 
 
 export default function AppLayout() {
     const location = useLocation();
     useTheme(); // Apply data-theme to <html> based on stored preference
-
+    const isDark = useDark();
 
     return (
-        <div className="relative min-h-screen w-full overflow-hidden bg-[#f8f8fa] text-[#1d1d1f]">
+        <div className={`relative min-h-screen w-full overflow-hidden transition-colors ${isDark ? 'bg-[#0d0d0f] text-white' : 'bg-[#f8f8fa] text-[#1d1d1f]'}`}>
             <main className="relative z-0 h-full w-full pb-32">
                 <AnimatePresence mode="wait">
                     <motion.div

@@ -82,6 +82,7 @@ function App() {
   const login = useAppStore(state => state.login);
   const logout = useAppStore(state => state.logout);
   const fetchApplications = useAppStore(state => state.fetchApplications);
+  const fetchCVAnalysis = useAppStore(state => state.fetchCVAnalysis);
   const notifications = useAppStore(state => state.notifications);
   const applications = useAppStore(state => state.applications);
 
@@ -110,13 +111,14 @@ function App() {
     const unsub = onAuthChange(async (user) => {
       if (user) {
         login(user.email ?? '', user.displayName ?? '', user.uid);
-        await fetchApplications();
+        // Pull cloud state for this user so re-logins restore their data.
+        await Promise.all([fetchApplications(), fetchCVAnalysis()]);
       } else {
         logout();
       }
     });
     return () => unsub();
-  }, [login, logout, fetchApplications]);
+  }, [login, logout, fetchApplications, fetchCVAnalysis]);
 
   return (
     <ErrorBoundary>

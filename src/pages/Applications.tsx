@@ -388,7 +388,7 @@ const Applications = () => {
                 <Reveal direction="up" delay={0.2} className="w-full">
                     <div className="flex flex-col gap-4 apple-glass-card p-4 sm:p-8">
                         {/* Desktop Headers */}
-                        <div className="hidden lg:grid lg:grid-cols-12 gap-4 px-6 py-4 rounded-2xl bg-gradient-to-r from-indigo-50/50 to-pink-50/50 border border-black/5 text-xs font-semibold text-black/60 uppercase tracking-wider">
+                        <div className={`hidden lg:grid lg:grid-cols-12 gap-4 px-6 py-4 rounded-2xl border text-xs font-semibold uppercase tracking-wider ${isDark ? 'bg-gradient-to-r from-indigo-500/10 to-pink-500/10 border-white/10 text-white/70' : 'bg-gradient-to-r from-indigo-50/50 to-pink-50/50 border-black/5 text-black/60'}`}>
                             <div className="col-span-2 cursor-pointer hover:text-black flex items-center gap-1 transition-colors" onClick={() => handleSort('companyName')}>
                                 Firma / Pozisyon
                                 {sortField === 'companyName' && (sortOrder === 'asc' ? <ArrowUp size={12} /> : <ArrowDown size={12} />)}
@@ -408,19 +408,19 @@ const Applications = () => {
                         <div className="flex flex-col gap-4">
                             <AnimatePresence>
                                 {filteredApps.length === 0 ? (
-                                    <div className="text-center py-16 px-6 text-black/50 bg-white rounded-3xl border border-black/5">
+                                    <div className={`text-center py-16 px-6 rounded-3xl border ${isDark ? 'bg-white/5 border-white/8 text-white/60' : 'bg-white border-black/5 text-black/55'}`}>
                                         <div className="text-4xl mb-3">{hasFilter ? '🔍' : '📭'}</div>
-                                        <p className="font-bold text-black/70 mb-1">
+                                        <p className={`font-bold mb-1 ${isDark ? 'text-white/85' : 'text-black/70'}`}>
                                             {hasFilter ? 'Sonuç bulunamadı' : 'Henüz başvuru eklemediniz'}
                                         </p>
-                                        <p className="text-sm text-black/60">
+                                        <p className={`text-sm ${isDark ? 'text-white/60' : 'text-black/60'}`}>
                                             {hasFilter
                                                 ? 'Filtreleri sıfırlayıp tekrar deneyin.'
                                                 : 'İlk başvurunuzu eklemek için Ekle butonunu kullanın.'}
                                         </p>
                                         {hasFilter && (
                                             <button onClick={() => { setSearchTerm(''); setStatusFilter(''); setTagFilter(''); }}
-                                                className="mt-5 rounded-full border border-black/10 px-5 py-2 text-xs font-bold text-black/70 hover:bg-black/5 transition-all">
+                                                className={`mt-5 rounded-full border px-5 py-2 text-xs font-bold transition-all ${isDark ? 'border-white/15 text-white/70 hover:bg-white/5' : 'border-black/10 text-black/70 hover:bg-black/5'}`}>
                                                 Filtreleri Temizle
                                             </button>
                                         )}

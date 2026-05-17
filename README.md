@@ -141,11 +141,17 @@ In the [Firebase Console](https://console.firebase.google.com):
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    // Job applications: one document per app, scoped to userId field
     match /applications/{docId} {
       allow read, write: if request.auth != null
         && request.auth.uid == resource.data.userId;
       allow create: if request.auth != null
         && request.resource.data.userId == request.auth.uid;
+    }
+    // CV analyses: one document per user, doc id = uid
+    match /cvAnalyses/{userId} {
+      allow read, write: if request.auth != null
+        && request.auth.uid == userId;
     }
   }
 }
