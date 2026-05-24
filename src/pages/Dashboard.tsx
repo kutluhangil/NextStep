@@ -31,7 +31,6 @@ const Dashboard = () => {
 
     const card = isDark ? 'bg-[#1c1c1e] border-white/5 text-white' : 'bg-white border-black/5 text-[#1d1d1f]';
     const rowHover = isDark ? 'hover:bg-white/[0.03]' : 'hover:bg-[#fafafe]';
-    const divider = isDark ? 'divide-white/5' : 'divide-black/5';
     const mutedText = isDark ? 'text-white/70' : 'text-black/60';
     const subText = isDark ? 'text-white/60' : 'text-black/60';
     const colHead = isDark ? 'text-white/60' : 'text-black/60';
