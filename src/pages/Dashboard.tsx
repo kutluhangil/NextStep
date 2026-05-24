@@ -158,64 +158,74 @@ const Dashboard = () => {
                             <p className={`font-medium ${mutedText}`}>Henüz hiç başvuru eklemedin.</p>
                         </div>
                     ) : (
-                        <div className={`${card} rounded-3xl border shadow-[0_2px_24px_#00000008] overflow-hidden`}>
-                            {/* Table Header */}
-                            <div className={`hidden md:grid grid-cols-[2fr_1fr_1fr_1fr_1fr_1fr_1fr_120px] gap-4 px-6 py-4 border-b ${isDark ? 'border-white/5 bg-white/[0.02]' : 'border-black/5 bg-[#fafafa]'}`}>
-                                {['Firma / Pozisyon', 'Durum', 'Tarih', 'Platform', 'CV', 'Motivasyon', 'Test', 'İlan'].map(h => (
-                                    <div key={h} className={`text-xs font-bold uppercase tracking-widest ${colHead}`}>{h}</div>
-                                ))}
-                            </div>
-
-                            {/* Rows */}
-                            <div className={`flex flex-col ${divider}`}>
-                                {applications.slice(0, 5).map((app, i) => (
-                                    <motion.div
-                                        key={app.id}
-                                        initial={{ opacity: 0, x: -12 }}
-                                        animate={{ opacity: 1, x: 0 }}
-                                        transition={{ delay: 0.4 + i * 0.07, ease: 'easeOut' }}
-                                        className={`grid grid-cols-1 md:grid-cols-[2fr_1fr_1fr_1fr_1fr_1fr_1fr_120px] gap-4 px-6 py-5 ${rowHover} transition-colors cursor-pointer`}
-                                    >
-                                        <div className="flex flex-col min-w-0">
-                                            <span className={`font-bold truncate ${isDark ? 'text-white' : 'text-[#1d1d1f]'}`}>{app.companyName}</span>
-                                            <span className={`text-sm truncate ${subText}`}>{app.position}</span>
-                                        </div>
-                                        <div className="flex items-center">
-                                            <span className={`text-xs font-semibold px-3 py-1.5 rounded-full border whitespace-nowrap ${statusColor[app.status] || 'bg-gray-50 text-gray-600 border-gray-100'}`}>
-                                                {app.status}
-                                            </span>
-                                        </div>
-                                        <div className={`flex items-center text-sm ${subText}`}>
-                                            {new Date(app.date).toLocaleDateString('tr-TR')}
-                                        </div>
-                                        <div className={`flex items-center text-sm ${subText}`}>{app.platform || '—'}</div>
-                                        <div className={`flex items-center text-sm ${subText}`}>{app.cvVersion || '—'}</div>
-                                        <div className={`flex items-center text-sm ${subText}`}>
-                                            {app.motivation ? (
-                                                <span className="text-emerald-600 font-semibold">✓ Eklendi</span>
-                                            ) : <span className="text-black/55">—</span>}
-                                        </div>
-                                        <div className="flex items-center text-sm">
-                                            {app.testLink ? (
-                                                <a href={app.testLink} target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:underline font-semibold" onClick={e => e.stopPropagation()}>Var</a>
-                                            ) : <span className="text-black/55">—</span>}
-                                        </div>
-                                        <div className="flex items-center">
-                                            {app.jobLink ? (
-                                                <a
-                                                    href={app.jobLink}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    onClick={e => e.stopPropagation()}
-                                                    className="whitespace-nowrap rounded-full bg-gradient-to-r from-indigo-500 to-blue-500 px-4 py-2 text-xs font-bold text-white hover:shadow-[0_4px_16px_rgba(99,102,241,0.4)] hover:-translate-y-0.5 transition-all"
-                                                >
-                                                    İlanı Aç
-                                                </a>
-                                            ) : <span className="text-black/55">—</span>}
-                                        </div>
-                                    </motion.div>
-                                ))}
-                            </div>
+                        <div className={`${card} rounded-3xl border shadow-[0_2px_24px_#00000008] overflow-x-auto`}>
+                            <table className="w-full table-fixed border-collapse">
+                                <colgroup>
+                                    <col style={{ width: '22%' }} />
+                                    <col style={{ width: '18%' }} />
+                                    <col style={{ width: '11%' }} />
+                                    <col style={{ width: '10%' }} />
+                                    <col style={{ width: '8%' }} />
+                                    <col style={{ width: '11%' }} />
+                                    <col style={{ width: '8%' }} />
+                                    <col style={{ width: '12%' }} />
+                                </colgroup>
+                                <thead>
+                                    <tr className={`border-b ${isDark ? 'border-white/5 bg-white/[0.02]' : 'border-black/5 bg-[#fafafa]'}`}>
+                                        <th className={`pl-6 pr-4 py-4 text-left text-xs font-bold uppercase tracking-widest ${colHead}`}>Firma / Pozisyon</th>
+                                        <th className={`px-4 py-4 text-left text-xs font-bold uppercase tracking-widest ${colHead}`}>Durum</th>
+                                        <th className={`px-4 py-4 text-left text-xs font-bold uppercase tracking-widest ${colHead}`}>Tarih</th>
+                                        <th className={`px-4 py-4 text-left text-xs font-bold uppercase tracking-widest ${colHead}`}>Platform</th>
+                                        <th className={`px-4 py-4 text-left text-xs font-bold uppercase tracking-widest ${colHead}`}>CV</th>
+                                        <th className={`px-4 py-4 text-left text-xs font-bold uppercase tracking-widest ${colHead}`}>Motivasyon</th>
+                                        <th className={`px-4 py-4 text-left text-xs font-bold uppercase tracking-widest ${colHead}`}>Test</th>
+                                        <th className={`px-4 pr-6 py-4 text-left text-xs font-bold uppercase tracking-widest ${colHead}`}>İlan</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {applications.slice(0, 5).map((app, i) => (
+                                        <motion.tr
+                                            key={app.id}
+                                            initial={{ opacity: 0, x: -12 }}
+                                            animate={{ opacity: 1, x: 0 }}
+                                            transition={{ delay: 0.4 + i * 0.07, ease: 'easeOut' }}
+                                            className={`border-b last:border-b-0 ${isDark ? 'border-white/5' : 'border-black/5'} ${rowHover} transition-colors cursor-pointer`}
+                                        >
+                                            <td className="pl-6 pr-4 py-5">
+                                                <div className="flex flex-col min-w-0">
+                                                    <span className={`font-bold truncate ${isDark ? 'text-white' : 'text-[#1d1d1f]'}`}>{app.companyName}</span>
+                                                    <span className={`text-sm truncate ${subText}`}>{app.position}</span>
+                                                </div>
+                                            </td>
+                                            <td className="px-4 py-5">
+                                                <span className={`inline-block text-xs font-semibold px-3 py-1.5 rounded-full border max-w-full truncate ${statusColor[app.status] || 'bg-gray-50 text-gray-600 border-gray-100'}`}>
+                                                    {app.status}
+                                                </span>
+                                            </td>
+                                            <td className={`px-4 py-5 text-sm ${subText}`}>
+                                                {new Date(app.date).toLocaleDateString('tr-TR')}
+                                            </td>
+                                            <td className={`px-4 py-5 text-sm ${subText} truncate`}>{app.platform || '—'}</td>
+                                            <td className={`px-4 py-5 text-sm ${subText} truncate`}>{app.cvVersion || '—'}</td>
+                                            <td className={`px-4 py-5 text-sm ${subText}`}>
+                                                {app.motivation
+                                                    ? <span className="text-emerald-600 font-semibold">✓ Eklendi</span>
+                                                    : <span className={isDark ? 'text-white/40' : 'text-black/40'}>—</span>}
+                                            </td>
+                                            <td className="px-4 py-5 text-sm">
+                                                {app.testLink
+                                                    ? <a href={app.testLink} target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:underline font-semibold" onClick={e => e.stopPropagation()}>Var</a>
+                                                    : <span className={isDark ? 'text-white/40' : 'text-black/40'}>—</span>}
+                                            </td>
+                                            <td className="px-4 pr-6 py-5">
+                                                {app.jobLink
+                                                    ? <a href={app.jobLink} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()} className="whitespace-nowrap rounded-full bg-gradient-to-r from-indigo-500 to-blue-500 px-4 py-2 text-xs font-bold text-white hover:shadow-[0_4px_16px_rgba(99,102,241,0.4)] hover:-translate-y-0.5 transition-all inline-block">İlanı Aç</a>
+                                                    : <span className={isDark ? 'text-white/40' : 'text-black/40'}>—</span>}
+                                            </td>
+                                        </motion.tr>
+                                    ))}
+                                </tbody>
+                            </table>
                         </div>
                     )}
                 </motion.div>
