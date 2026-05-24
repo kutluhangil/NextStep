@@ -9,6 +9,8 @@
 <img src="https://img.shields.io/badge/Gemini--1.5-AI-412991?style=for-the-badge&logo=google&logoColor=white" alt="gemini" />
 <img src="https://img.shields.io/badge/Firebase-Auth%20%2B%20Firestore-FFCA28?style=for-the-badge&logo=firebase&logoColor=black" alt="firebase" />
 <img src="https://img.shields.io/badge/Deployed-Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white" alt="vercel" />
+<img src="https://img.shields.io/badge/QA%20Tested-Cypress-04C38E?style=for-the-badge&logo=cypress&logoColor=white" alt="cypress" />
+<img src="https://img.shields.io/badge/Tests-19%20Passed-brightgreen?style=for-the-badge" alt="tests" />
 
 <br /><br />
 
@@ -57,6 +59,244 @@ Built with **React 19**, **Tailwind CSS 4** and **Framer Motion**, with a flowin
 | 🔐 **Auth** | Firebase Email/Password + Google Sign-In with `select_account` prompt |
 | 📨 **Feedback Form** | EmailJS-powered, with graceful `mailto:` fallback |
 | 🎬 **Premium Hero** | Scramble-cycling headline with gradient text + interactive screenshot showcase |
+
+---
+
+## 🧪 QA Test Süreci — GOIT Cross-Functional Project
+
+Bu proje, **GOIT Full Stack & QA Tester İş Birliği Programı** kapsamında profesyonel bir QA sürecinden geçirilmiştir.
+
+### Ekip
+
+| Rol | İsim | GitHub |
+|-----|------|--------|
+| Full Stack Developer | Kutluhan Gül | [@kutluhangil](https://github.com/kutluhangil) |
+| QA Tester | Merve Gönbe | [@mervekimyagonbe](https://github.com/mervekimyagonbe) |
+
+### Test Kaynakları
+
+| Kaynak | Bağlantı |
+|--------|----------|
+| 📁 QA Repository | [github.com/mervekimyagonbe/QA-test-process-nextstep](https://github.com/mervekimyagonbe/QA-test-process-nextstep) |
+| 📋 Test Dokümanı (QA Checklist / Bug Reports / Test Scenarios) | [Google Sheets — Görüntüle](https://docs.google.com/spreadsheets/d/1LK4fp9u91frjjCrFAw7zxKt8H002v9UrvYH_gn8JS7Q/edit?gid=1378012046#gid=1378012046) |
+| 📊 Mochawesome Test Raporu | [mervekimyagonbe.github.io/QA-test-process-nextstep](https://mervekimyagonbe.github.io/QA-test-process-nextstep/) |
+| 🎬 Sunum Videosu | [OneDrive — İzle](https://onedrive.live.com/?qt=allmyphotos&photosData=%2Fshare%2FA900DD1647AB23ED%21s66b96c2a757d458089a56a02b5feab86%3Fithint%3Dvideo%26e%3DwZJzg3%26migratedtospo%3Dtrue&cid=A900DD1647AB23ED&id=A900DD1647AB23ED%21s66b96c2a757d458089a56a02b5feab86&redeem=aHR0cHM6Ly8xZHJ2Lm1zL3YvYy9hOTAwZGQxNjQ3YWIyM2VkL0lRQXFiTGxtZlhXQVJZbWxhZ0sxX3F1R0FkZTIyRWxOZ0RwRktZSUNlaFJOSmg4P2U9d1pKemcz) |
+
+---
+
+### ✅ Cypress Otomasyon Test Sonuçları
+
+Kritik kullanıcı senaryoları **Cypress** kullanılarak otomasyona taşınmış ve tüm testler başarıyla geçmiştir.
+
+#### 🔐 Login Testleri — `cypress/e2e/login.cy.js` — 6.8s · **4/4 Passed**
+
+| Test ID | Senaryo | Süre |
+|---------|---------|------|
+| TC01 | Geçerli bilgilerle giriş yapılabilmeli | 2.7s |
+| TC02 | Yanlış şifreyle giriş reddedilmeli | 1.8s |
+| TC03 | Boş alanlarla submit butonu disabled olmalı | 788ms |
+| TC04 | Geçersiz email formatında giriş yapılamamalı | 1.4s |
+
+#### 📊 Dashboard Testleri — `cypress/e2e/dashboard.cy.js` — 12.9s · **4/4 Passed**
+
+| Test ID | Senaryo | Süre |
+|---------|---------|------|
+| TC07 | Dashboard giriş sonrası yüklenmeli | 3.8s |
+| TC08 | Navigasyon menüsü görünmeli | 2.8s |
+| TC09 | Ekle butonuna tıklanınca /add sayfasına gitmeli | 2.8s |
+| TC10 | Logout butonu tıklanınca ana sayfaya yönlenmeli | 3.3s |
+
+#### 📋 Başvurular Listesi Testleri — `cypress/e2e/application.cy.js` — 20.4s · **6/6 Passed**
+
+| Test ID | Senaryo | Süre |
+|---------|---------|------|
+| TC11 | Başvurular sayfası yüklenmeli | 4s |
+| TC12 | Başvuru listesi en az 1 kayıt içermeli | 2.9s |
+| TC13 | Firma adına göre arama çalışmalı | 3.6s |
+| TC14 | Duruma göre filtreleme çalışmalı | 3.1s |
+| TC15 | Detay butonuna tıklanabilmeli | 3.1s |
+| TC16 | Sayfalama ikinci sayfaya geçebilmeli | 3.4s |
+
+#### ➕ Başvuru Ekleme Testleri — `cypress/e2e/addApplication.cy.js` — 18s · **4/4 Passed**
+
+| Test ID | Senaryo | Süre |
+|---------|---------|------|
+| TC05 | Geçerli bilgilerle başvuru eklenebilmeli | 8.9s |
+| TC06 | Zorunlu alanlar boş bırakılınca form gönderilememeli | 3s |
+| TC17 | Arama filtresine yazılınca input güncellenmeli | 3.1s |
+| TC18 | İptal butonuna basınca /add sayfasından çıkılmalı | 3.1s |
+
+#### 🔒 Yetkisiz Erişim Testi — `cypress/e2e/unauthorized.cy.js` — 638ms · **1/1 Passed**
+
+| Test ID | Senaryo | Süre |
+|---------|---------|------|
+| TC19 | Login olmadan dashboard açılmamalı / Kullanıcı dashboard'a erişememeli | 638ms |
+
+> **Toplam:** 19 test case · 5 test suite · ~59s · ✅ **19/19 Passed**
+
+---
+
+### 📋 Kapsanan Test Alanları
+
+QA sürecinde aşağıdaki 9 test kategorisi kapsamlı biçimde incelenmiştir:
+
+<details>
+<summary><b>🔵 Fonksiyonel Testler (F-01 – F-14)</b></summary>
+
+| ID | Test Adımı | Durum |
+|----|-----------|-------|
+| F-01 | Giriş ekranı 3 saniye içinde yükleniyor mu? | ✅ |
+| F-02 | Geçerli kimlik bilgileriyle giriş yapılabiliyor mu? | ✅ |
+| F-03 | Yanlış şifreyle giriş reddediliyor mu? | ✅ |
+| F-04 | Boş alanlarla giriş engelleniyor mu? | ✅ |
+| F-05 | Kayıt akışı tamamlanabiliyor mu? | ✅ |
+| F-06 | Kayıt sonrası yönlendirme doğru mu? | ✅ |
+| F-07 | Logout işlemi çalışıyor mu? | ✅ |
+| F-08 | Oturum açık kullanıcı login sayfasına girerse ne olur? | ✅ |
+| F-09 | CRUD işlemleri (ekle / düzenle / sil) çalışıyor mu? | ✅ |
+| F-10 | Silinen veri tekrar görünüyor mu? | ✅ |
+| F-11 | Sayfalama doğru çalışıyor mu? | ✅ |
+| F-12 | Arama/filtreleme fonksiyonu doğru sonuç veriyor mu? | ✅ |
+| F-13 | Admin paneli yetkisiz kullanıcıya kapalı mı? | — mevcut olmayan özellik |
+| F-14 | Kullanıcı rolleri doğru çalışıyor mu? | — mevcut olmayan özellik |
+
+</details>
+
+<details>
+<summary><b>🎨 UI/UX Testleri (U-01 – U-12)</b></summary>
+
+| ID | Test Adımı | Durum |
+|----|-----------|-------|
+| U-01 | Mobil (320px–480px) uyumlu mu? | ✅ |
+| U-02 | Tablet (768px) uyumlu mu? | ✅ |
+| U-03 | Desktop (1280px+) uyumlu mu? | ✅ |
+| U-04 | Fontlar tüm ekranlarda okunuyor mu? | ✅ |
+| U-05 | Butonlar yeterli boyutta ve tıklanabilir mi? (min 44×44px) | ✅ |
+| U-06 | Renkler yeterli kontrast sağlıyor mu? (WCAG AA) | ✅ |
+| U-07 | Yükleme sırasında kullanıcıya geri bildirim var mı? | ✅ |
+| U-08 | Boş durum mesajı var mı? | ✅ |
+| U-09 | Form alanlarına label eklenmiş mi? | ✅ |
+| U-10 | Navigasyon tutarlı mı? | ✅ |
+| U-11 | Sayfa başlıkları anlamlı mı? | ✅ |
+| U-12 | 404 sayfası var mı? | ✅ |
+
+</details>
+
+<details>
+<summary><b>📝 Form Validation Testleri (FV-01 – FV-10)</b></summary>
+
+| ID | Test Adımı | Durum |
+|----|-----------|-------|
+| FV-01 | Boş form gönderimi engelleniyor mu? | ✅ |
+| FV-02 | Geçersiz e-mail formatı reddediliyor mu? | ✅ |
+| FV-03 | Şifre minimum karakter kuralı uygulanıyor mu? | ✅ |
+| FV-04 | Şifre & tekrar şifre alanları eşleşiyor mu? | ✅ |
+| FV-05 | Sayısal alanlara harf girildiğinde ne olur? | ✅ |
+| FV-06 | Çok uzun giriş uygun şekilde işleniyor mu? (500+ karakter) | ✅ |
+| FV-07 | Özel karakter ve emoji girişleri işleniyor mu? | ✅ |
+| FV-08 | Sadece boşluk girildiğinde form gönderiliyor mu? | ✅ |
+| FV-09 | Hata mesajları hangi alana ait olduğunu belirtiyor mu? | ✅ |
+| FV-10 | Başarılı işlem sonrası form temizleniyor mu? | ✅ |
+
+</details>
+
+<details>
+<summary><b>🌐 API Testleri (A-01 – A-07)</b></summary>
+
+| ID | Test Adımı | Durum |
+|----|-----------|-------|
+| A-01 | Başarılı istekler 200/201 döndürüyor mu? | ✅ |
+| A-02 | Hatalı giriş 400/401 döndürüyor mu? | ✅ |
+| A-03 | Yetkisiz erişimde 403 döndürüyor mu? | ✅ |
+| A-04 | Başarılı silme 200 veya 204 döndürüyor mu? | ✅ |
+| A-05 | API response'unda beklenen alanlar var mı? | ✅ |
+| A-06 | Ağ isteği başarısız olduğunda UI ne yapıyor? | ✅ |
+| A-07 | Response süresi 2 saniyenin altında mı? | ✅ |
+
+</details>
+
+<details>
+<summary><b>⚡ Performans Testleri (P-01 – P-06)</b></summary>
+
+| ID | Test Adımı | Durum |
+|----|-----------|-------|
+| P-01 | Ana sayfa 3 saniye içinde yükleniyor mu? | ✅ |
+| P-02 | Lighthouse Performance skoru 50+? | ✅ |
+| P-03 | Görseller optimize edilmiş mi? | ✅ |
+| P-04 | Sayfa birden fazla kez yenilendiğinde stabil mi? | ✅ |
+| P-05 | Büyük veri listesi akıcı render ediliyor mu? (50+ kayıt) | ✅ |
+| P-06 | Birden fazla sekme açıkken uygulama çalışıyor mu? | ✅ |
+
+</details>
+
+<details>
+<summary><b>🔒 Güvenlik Testleri (S-01 – S-07)</b></summary>
+
+| ID | Test Adımı | Durum |
+|----|-----------|-------|
+| S-01 | Token/oturum olmadan korunan sayfaya erişilebiliyor mu? | ✅ |
+| S-02 | Şifre alanında metin maskeleniyor mu? | ✅ |
+| S-03 | Şifreler Network isteğinde düz metin görünüyor mu? | ✅ |
+| S-04 | Console'da hassas veri loglanıyor mu? | ✅ |
+| S-05 | Temel XSS testi geçiliyor mu? | ✅ |
+| S-06 | Logout sonrası geri tuşu çalışıyor mu? | ✅ |
+| S-07 | Token süre dolunca ne oluyor? | ✅ |
+
+</details>
+
+<details>
+<summary><b>🧩 Edge Case Testleri (E-01 – E-08)</b></summary>
+
+| ID | Test Adımı | Durum |
+|----|-----------|-------|
+| E-01 | Ağ bağlantısı kesildiğinde ne oluyor? | ✅ |
+| E-02 | Sayfa ortasında yenilenirse durum korunuyor mu? | ✅ |
+| E-03 | Aynı e-postayla ikinci kayıt olmak mümkün mü? | ✅ |
+| E-04 | Büyük dosya/veri yüklemeleri nasıl işleniyor? | ✅ |
+| E-05 | URL'e manuel geçersiz ID girildiğinde ne oluyor? | ✅ |
+| E-06 | Hızlı ardışık tıklamada veri mükerrer mi kaydediliyor? | ✅ |
+| E-07 | Çok kısa veya tek karakterli giriş nasıl işleniyor? | ✅ |
+| E-08 | Türkçe karakter içeren girişler sorun çıkarıyor mu? | ✅ |
+
+</details>
+
+<details>
+<summary><b>⚠️ Hata Yönetimi Testleri (EH-01 – EH-06)</b></summary>
+
+| ID | Test Adımı | Durum |
+|----|-----------|-------|
+| EH-01 | Hata mesajları kullanıcı dostu mu? | ✅ |
+| EH-02 | Hata mesajları ekranda yeterince süre görünüyor mu? (3s+) | ✅ |
+| EH-03 | Başarı mesajları mevcut mu? | ✅ |
+| EH-04 | Silme işleminde onay alınıyor mu? | ✅ |
+| EH-05 | Form submit sonrası buton devre dışı kalıyor mu? | ✅ |
+| EH-06 | Uygulama konsol hatasız mı çalışıyor? | ✅ |
+
+</details>
+
+<details>
+<summary><b>🌍 Cross-Browser Testleri (CB-01 – CB-06)</b></summary>
+
+| ID | Tarayıcı | Durum |
+|----|---------|-------|
+| CB-01 | Chrome (güncel) | ✅ |
+| CB-02 | Firefox (güncel) | ✅ |
+| CB-03 | Edge (güncel) | ✅ |
+| CB-04 | Safari (varsa) | ✅ |
+| CB-05 | Mobil Chrome (Android) | ✅ |
+| CB-06 | DevTools Responsive Mode (375px & 768px) | ✅ |
+
+</details>
+
+### Kullanılan Test Teknolojileri
+
+```
+Test Otomasyon   →  Cypress
+Test Reporter    →  Mochawesome
+Scripting        →  JavaScript
+API Testing      →  Postman
+Browser Tools    →  Chrome DevTools
+```
 
 ---
 
@@ -264,7 +504,7 @@ State flows through Zustand with optimistic UI updates: the local store mutates 
 
 ---
 
-## 🧪 Known Limitations
+## 🧩 Known Limitations
 
 | Area | Status |
 |------|--------|
@@ -296,6 +536,8 @@ Distributed under the MIT License. See `LICENSE` for details.
 <div align="center">
 
 Built by [**kutluhangil**](https://github.com/kutluhangil)
+
+QA tested by [**mervekimyagonbe**](https://github.com/mervekimyagonbe) — [QA Repository](https://github.com/mervekimyagonbe/QA-test-process-nextstep)
 
 <br />
 
