@@ -160,7 +160,7 @@ const Dashboard = () => {
                     ) : (
                         <div className={`${card} rounded-3xl border shadow-[0_2px_24px_#00000008] overflow-hidden`}>
                             {/* Table Header */}
-                            <div className={`hidden md:grid grid-cols-[2fr_1fr_1fr_1fr_1fr_1fr_1fr_auto] gap-4 px-6 py-4 border-b ${isDark ? 'border-white/5 bg-white/[0.02]' : 'border-black/5 bg-[#fafafa]'}`}>
+                            <div className={`hidden md:grid grid-cols-[2fr_1fr_1fr_1fr_1fr_1fr_1fr_120px] gap-4 px-6 py-4 border-b ${isDark ? 'border-white/5 bg-white/[0.02]' : 'border-black/5 bg-[#fafafa]'}`}>
                                 {['Firma / Pozisyon', 'Durum', 'Tarih', 'Platform', 'CV', 'Motivasyon', 'Test', 'İlan'].map(h => (
                                     <div key={h} className={`text-xs font-bold uppercase tracking-widest ${colHead}`}>{h}</div>
                                 ))}
@@ -174,7 +174,7 @@ const Dashboard = () => {
                                         initial={{ opacity: 0, x: -12 }}
                                         animate={{ opacity: 1, x: 0 }}
                                         transition={{ delay: 0.4 + i * 0.07, ease: 'easeOut' }}
-                                        className={`grid grid-cols-1 md:grid-cols-[2fr_1fr_1fr_1fr_1fr_1fr_1fr_auto] gap-4 px-6 py-5 ${rowHover} transition-colors cursor-pointer`}
+                                        className={`grid grid-cols-1 md:grid-cols-[2fr_1fr_1fr_1fr_1fr_1fr_1fr_120px] gap-4 px-6 py-5 ${rowHover} transition-colors cursor-pointer`}
                                     >
                                         <div className="flex flex-col min-w-0">
                                             <span className={`font-bold truncate ${isDark ? 'text-white' : 'text-[#1d1d1f]'}`}>{app.companyName}</span>
