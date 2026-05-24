@@ -5,6 +5,7 @@ import { useAppStore } from '../store/useAppStore';
 import type { Application } from '../store/useAppStore';
 import emailjs from '@emailjs/browser';
 import { useLanguage } from '../lib/i18n';
+import type { Lang } from '../lib/i18n';
 import { useDark } from '../hooks/useDark';
 import type { Theme } from '../store/useAppStore';
 import { logoutUser } from '../lib/authService';
@@ -27,7 +28,7 @@ const Settings = () => {
     const notifications = useAppStore(state => state.notifications);
     const setNotifications = useAppStore(state => state.setNotifications);
     const navigate = useNavigate();
-    const { t } = useLanguage();
+    const { t, lang, setLang } = useLanguage();
     const wipeApplications = useAppStore(state => state.wipeApplications);
     const [showConfirm, setShowConfirm] = useState(false);
     const [wiping, setWiping] = useState(false);
@@ -117,7 +118,7 @@ const Settings = () => {
                 : Array.isArray(json.applications)
                     ? json.applications
                     : [];
-            if (apps.length === 0) { toast('Geçerli başvuru bulunamadı.'); return; }
+            if (apps.length === 0) { toast(t('settings.noValidApps')); return; }
 
             let count = 0;
             for (const app of apps) {
@@ -127,9 +128,9 @@ const Settings = () => {
                     count++;
                 }
             }
-            toast(`${count} başvuru içe aktarıldı ✓`);
+            toast(`${count} ${t('settings.importedCount')}`);
         } catch {
-            toast('JSON dosyası okunamadı.');
+            toast(t('settings.jsonError'));
         } finally {
             setImporting(false);
             e.target.value = '';
@@ -150,12 +151,17 @@ const Settings = () => {
         a.download = `nextstep-backup-${new Date().toISOString().split('T')[0]}.json`;
         a.click();
         URL.revokeObjectURL(url);
-        toast(`${applications.length} başvuru dışa aktarıldı`);
+        toast(`${applications.length} ${t('settings.exportedCount')}`);
     };
 
-    const handleThemeChange = (t: Theme) => {
-        setThemeStore(t);
-        toast('Tema güncellendi');
+    const handleThemeChange = (newTheme: Theme) => {
+        setThemeStore(newTheme);
+        toast(t('settings.themeUpdated'));
+    };
+
+    const handleLangChange = (l: Lang) => {
+        setLang(l);
+        toast(t('settings.langChanged'));
     };
 
     const initials = user?.name?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() || 'NS';
@@ -185,9 +191,14 @@ const Settings = () => {
     );
 
     const themeOptions: { value: Theme; label: string; icon: string }[] = [
-        { value: 'light', label: 'Açık', icon: '☀️' },
-        { value: 'dark', label: 'Koyu', icon: '🌙' },
-        { value: 'system', label: 'Sistem', icon: '💻' },
+        { value: 'light', label: t('settings.themeLight'), icon: '☀️' },
+        { value: 'dark', label: t('settings.themeDark'), icon: '🌙' },
+        { value: 'system', label: t('settings.themeSystem'), icon: '💻' },
+    ];
+
+    const langOptions: { code: Lang; flag: string; label: string }[] = [
+        { code: 'tr', flag: '🇹🇷', label: 'Türkçe' },
+        { code: 'en', flag: '🇬🇧', label: 'English' },
     ];
 
     return (
@@ -196,9 +207,9 @@ const Settings = () => {
 
                 {/* Header */}
                 <motion.div {...fadeUp(0)} className="mb-8 sm:mb-10">
-                    <p className={`text-xs font-bold tracking-[0.18em] uppercase mb-2 ${subColor}`}>Kişiselleştirme</p>
-                    <h1 className={`text-3xl sm:text-5xl font-bold tracking-tight mb-3 ${titleColor}`}>Ayarlar</h1>
-                    <p className={`text-sm sm:text-base leading-relaxed ${isDark ? 'text-white/50' : 'text-black/50'}`}>Hesap, güvenlik ve tercihlerinizi yönetin.</p>
+                    <p className={`text-xs font-bold tracking-[0.18em] uppercase mb-2 ${subColor}`}>{t('settings.personalization')}</p>
+                    <h1 className={`text-3xl sm:text-5xl font-bold tracking-tight mb-3 ${titleColor}`}>{t('settings.title')}</h1>
+                    <p className={`text-sm sm:text-base leading-relaxed ${isDark ? 'text-white/50' : 'text-black/50'}`}>{t('settings.manage')}</p>
                 </motion.div>
 
                 <div className="flex flex-col gap-4 sm:gap-5">
@@ -220,57 +231,57 @@ const Settings = () => {
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
                             <div>
-                                <label className={`text-xs font-bold uppercase tracking-wider mb-1.5 block ${subColor}`}>Ad</label>
+                                <label className={`text-xs font-bold uppercase tracking-wider mb-1.5 block ${subColor}`}>{t('settings.firstName')}</label>
                                 <input type="text" disabled value={user?.name?.split(' ')[0] || ''}
                                     className={`w-full rounded-xl border px-4 py-3 text-sm font-medium ${inputBg}`} />
                             </div>
                             <div>
-                                <label className={`text-xs font-bold uppercase tracking-wider mb-1.5 block ${subColor}`}>Soyad</label>
+                                <label className={`text-xs font-bold uppercase tracking-wider mb-1.5 block ${subColor}`}>{t('settings.lastName')}</label>
                                 <input type="text" disabled value={user?.name?.split(' ').slice(1).join(' ') || ''}
                                     className={`w-full rounded-xl border px-4 py-3 text-sm font-medium ${inputBg}`} />
                             </div>
                             <div className="md:col-span-2">
-                                <label className={`text-xs font-bold uppercase tracking-wider mb-1.5 block ${subColor}`}>E-posta</label>
+                                <label className={`text-xs font-bold uppercase tracking-wider mb-1.5 block ${subColor}`}>{t('settings.email')}</label>
                                 <input type="email" disabled value={user?.email || ''}
                                     className={`w-full rounded-xl border px-4 py-3 text-sm font-medium ${inputBg}`} />
                             </div>
                         </div>
 
                         <div className={`mt-5 sm:mt-6 pt-4 sm:pt-5 border-t ${rowBorder} flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3`}>
-                            <span className={`text-xs ${subColor}`}>Profil bilgileri hesabınızdan alınır.</span>
+                            <span className={`text-xs ${subColor}`}>{t('settings.profileInfo')}</span>
                             <button onClick={handleLogout}
                                 className={`rounded-full border px-6 py-2.5 text-sm font-semibold transition-all hover:border-red-200 hover:text-red-600 hover:bg-red-50 ${isDark ? 'border-white/10 text-white/70' : 'border-black/10 bg-white text-black/70'}`}>
-                                Oturumu Kapat
+                                {t('settings.signOut')}
                             </button>
                         </div>
                     </motion.div>
 
                     {/* ── SECURITY CARD ────────────────────────────────────── */}
                     <motion.div {...fadeUp(0.12)} className={`${card} rounded-[24px] border shadow-[0_2px_24px_#00000008] p-5 sm:p-8`}>
-                        <h3 className={`text-base font-bold mb-1 ${titleColor}`}>Güvenlik</h3>
-                        <p className={`text-xs mb-5 ${subColor}`}>Hesabınızı güvende tutmak için şifrenizi düzenli olarak güncelleyin.</p>
+                        <h3 className={`text-base font-bold mb-1 ${titleColor}`}>{t('settings.securityTitle')}</h3>
+                        <p className={`text-xs mb-5 ${subColor}`}>{t('settings.securitySub')}</p>
 
-                        <SettingRow icon="🔒" title="Şifre Değiştir" description="Son şifre değişikliği: Bilinmiyor">
-                            <button onClick={() => toast('Şifre güncelleme yakında aktif olacak')}
+                        <SettingRow icon="🔒" title={t('settings.changePassword')} description={t('settings.changePassDesc')}>
+                            <button onClick={() => toast(t('settings.passwordSoon'))}
                                 className={`whitespace-nowrap rounded-full border px-5 py-2 text-xs font-bold transition-all hover:border-indigo-300 hover:text-indigo-700 hover:bg-indigo-50 ${isDark ? 'border-white/10 text-white/60' : 'border-black/10 text-black/70'}`}>
-                                Güncelle
+                                {t('action.update')}
                             </button>
                         </SettingRow>
 
-                        <SettingRow icon="📱" title="Aktif Oturumlar" description="Farklı cihazlardaki oturumlarınızı görün ve kapatın">
-                            <button onClick={() => toast('Tek oturum aktif — bu cihaz')}
+                        <SettingRow icon="📱" title={t('settings.activeSessions')} description={t('settings.activeSessionsDesc')}>
+                            <button onClick={() => toast(t('settings.oneSession'))}
                                 className="text-xs font-bold text-indigo-500 hover:text-indigo-600 transition-colors">
-                                Görüntüle →
+                                {t('action.view')}
                             </button>
                         </SettingRow>
                     </motion.div>
 
                     {/* ── GÖRÜNÜM KARTI ────────────────────────────────────── */}
                     <motion.div {...fadeUp(0.16)} className={`${card} rounded-[24px] border shadow-[0_2px_24px_#00000008] p-5 sm:p-8`}>
-                        <h3 className={`text-base font-bold mb-1 ${titleColor}`}>Görünüm</h3>
-                        <p className={`text-xs mb-5 ${subColor}`}>Arayüz teması ve görünüm tercihleri.</p>
+                        <h3 className={`text-base font-bold mb-1 ${titleColor}`}>{t('settings.appearanceTitle')}</h3>
+                        <p className={`text-xs mb-5 ${subColor}`}>{t('settings.appearanceSub')}</p>
 
-                        <SettingRow icon="🎨" title="Tema" description="Açık, Koyu veya sistem varsayılanı">
+                        <SettingRow icon="🎨" title={t('settings.themeRow')} description={t('settings.themeDesc')}>
                             <div className="flex gap-2 flex-wrap">
                                 {themeOptions.map(opt => (
                                     <button key={opt.value}
@@ -288,41 +299,56 @@ const Settings = () => {
                             </div>
                         </SettingRow>
 
-                        <SettingRow icon="🌐" title="Dil" description="Uygulama dili">
-                            <div className={`flex items-center gap-2 rounded-xl border px-3 py-2 text-xs font-bold ${isDark ? 'border-white/8 bg-white/5 text-white/60' : 'border-black/8 bg-[#fafafa] text-black/60'}`}>
-                                🇹🇷 Türkçe
+                        <SettingRow icon="🌐" title={t('settings.langTitle')} description={t('settings.langDesc')}>
+                            <div className="flex gap-2">
+                                {langOptions.map(opt => (
+                                    <button
+                                        key={opt.code}
+                                        onClick={() => handleLangChange(opt.code)}
+                                        className={`flex items-center gap-2 rounded-xl border px-3 py-2 text-xs font-bold transition-all ${
+                                            lang === opt.code
+                                                ? 'bg-indigo-600 border-indigo-600 text-white shadow-[0_4px_12px_rgba(99,102,241,0.35)]'
+                                                : isDark
+                                                    ? 'border-white/8 bg-white/5 text-white/60 hover:border-white/20 hover:bg-white/8'
+                                                    : 'border-black/8 bg-[#fafafa] text-black/60 hover:border-indigo-300 hover:bg-indigo-50'
+                                        }`}
+                                    >
+                                        <span>{opt.flag}</span>
+                                        <span>{opt.label}</span>
+                                    </button>
+                                ))}
                             </div>
                         </SettingRow>
                     </motion.div>
 
                     {/* ── BİLDİRİM KARTI ───────────────────────────────────── */}
                     <motion.div {...fadeUp(0.2)} className={`${card} rounded-[24px] border shadow-[0_2px_24px_#00000008] p-5 sm:p-8`}>
-                        <h3 className={`text-base font-bold mb-1 ${titleColor}`}>Bildirimler</h3>
-                        <p className={`text-xs mb-5 ${subColor}`}>Hangi uyarıları almak istediğinizi seçin.</p>
+                        <h3 className={`text-base font-bold mb-1 ${titleColor}`}>{t('settings.notifTitle')}</h3>
+                        <p className={`text-xs mb-5 ${subColor}`}>{t('settings.notifSub')}</p>
 
-                        <SettingRow icon="📊" title="Haftalık Rapor" description="Her Pazartesi başvuru özetinizi alın">
-                            <Toggle checked={notifications.weeklyReport} onChange={() => { setNotifications({ weeklyReport: !notifications.weeklyReport }); toast('Tercih güncellendi'); }} />
+                        <SettingRow icon="📊" title={t('settings.weeklyReport')} description={t('settings.weeklyReportDesc')}>
+                            <Toggle checked={notifications.weeklyReport} onChange={() => { setNotifications({ weeklyReport: !notifications.weeklyReport }); toast(t('settings.prefUpdated')); }} />
                         </SettingRow>
 
-                        <SettingRow icon="⏰" title="Hareketsizlik Uyarısı" description="7 gün başvuru yoksa hatırlatma">
-                            <Toggle checked={notifications.reminderInactive} onChange={() => { setNotifications({ reminderInactive: !notifications.reminderInactive }); toast('Tercih güncellendi'); }} />
+                        <SettingRow icon="⏰" title={t('settings.inactiveAlert')} description={t('settings.inactiveAlertDesc')}>
+                            <Toggle checked={notifications.reminderInactive} onChange={() => { setNotifications({ reminderInactive: !notifications.reminderInactive }); toast(t('settings.prefUpdated')); }} />
                         </SettingRow>
 
-                        <SettingRow icon="🔔" title="Tarayıcı Bildirimleri" description="Takip tarihi gelen başvurular için masaüstü bildirimi">
+                        <SettingRow icon="🔔" title={t('settings.browserNotif')} description={t('settings.browserNotifDesc')}>
                             {typeof Notification !== 'undefined' && Notification.permission === 'granted' ? (
-                                <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded-full">Aktif ✓</span>
+                                <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded-full">{t('settings.activeLabel')}</span>
                             ) : (
                                 <button
                                     onClick={async () => {
                                         if (typeof Notification === 'undefined') {
-                                            toast('Bu tarayıcı bildirimleri desteklemiyor');
+                                            toast(t('settings.notifUnsupported'));
                                             return;
                                         }
                                         const perm = await Notification.requestPermission();
-                                        toast(perm === 'granted' ? 'Bildirim izni verildi ✓' : 'Bildirim izni reddedildi');
+                                        toast(perm === 'granted' ? t('settings.notifGranted') : t('settings.notifDenied'));
                                     }}
                                     className={`whitespace-nowrap rounded-full border px-5 py-2 text-xs font-bold transition-all hover:border-indigo-300 hover:text-indigo-600 hover:bg-indigo-50 ${isDark ? 'border-white/10 text-white/60' : 'border-black/10 text-black/70'}`}>
-                                    İzin Ver
+                                    {t('settings.allowNotif')}
                                 </button>
                             )}
                         </SettingRow>
@@ -330,27 +356,27 @@ const Settings = () => {
 
                     {/* ── VERİ YÖNETİMİ ────────────────────────────────────── */}
                     <motion.div {...fadeUp(0.24)} className={`${card} rounded-[24px] border shadow-[0_2px_24px_#00000008] p-5 sm:p-8`}>
-                        <h3 className={`text-base font-bold mb-1 ${titleColor}`}>Veri Yönetimi</h3>
-                        <p className={`text-xs mb-5 ${subColor}`}>Başvuru verilerinizi dışa aktarın veya silin.</p>
+                        <h3 className={`text-base font-bold mb-1 ${titleColor}`}>{t('settings.dataTitle')}</h3>
+                        <p className={`text-xs mb-5 ${subColor}`}>{t('settings.dataSub')}</p>
 
-                        <SettingRow icon="📥" title="Verileri Dışa Aktar" description={`${applications.length} başvuruyu JSON olarak indir`}>
+                        <SettingRow icon="📥" title={t('settings.exportTitle')} description={`${applications.length} ${t('settings.storageCount')} JSON`}>
                             <button onClick={handleExportJSON}
                                 className={`whitespace-nowrap rounded-full border px-5 py-2 text-xs font-bold transition-all hover:border-emerald-300 hover:text-emerald-600 hover:bg-emerald-50 ${isDark ? 'border-white/10 text-white/60' : 'border-black/10 text-black/70'}`}>
-                                JSON İndir
+                                {t('settings.exportBtn')}
                             </button>
                         </SettingRow>
 
-                        <SettingRow icon="📤" title="Verileri İçe Aktar" description="Daha önce dışa aktarılan JSON yedeğini geri yükle">
+                        <SettingRow icon="📤" title={t('settings.importTitle')} description={t('settings.importDesc')}>
                             <input ref={importRef} type="file" accept=".json" className="hidden" onChange={handleImportFile} />
                             <button onClick={handleImportJSON} disabled={importing}
                                 className={`whitespace-nowrap rounded-full border px-5 py-2 text-xs font-bold transition-all hover:border-indigo-300 hover:text-indigo-600 hover:bg-indigo-50 disabled:opacity-50 ${isDark ? 'border-white/10 text-white/60' : 'border-black/10 text-black/70'}`}>
-                                {importing ? 'Aktarılıyor...' : 'JSON Yükle'}
+                                {importing ? t('settings.importingBtn') : t('settings.importBtn')}
                             </button>
                         </SettingRow>
 
-                        <SettingRow icon="📦" title="Depolama" description="Veriler Firebase Firestore ve yerel olarak saklanır">
+                        <SettingRow icon="📦" title={t('settings.storageTitle')} description={t('settings.storageDesc')}>
                             <span className={`text-xs font-bold px-3 py-1.5 rounded-full ${isDark ? 'text-white/70 bg-white/5' : 'text-black/60 bg-black/5'}`}>
-                                {applications.length} başvuru
+                                {applications.length} {t('settings.storageCount')}
                             </span>
                         </SettingRow>
                     </motion.div>
@@ -404,39 +430,37 @@ const Settings = () => {
 
                     {/* ── TEHLİKE BÖLGESI ──────────────────────────────────── */}
                     <motion.div {...fadeUp(0.31)} className={`rounded-[24px] border p-5 sm:p-8 ${isDark ? 'bg-[#1c0a0a] border-rose-900/30 shadow-[0_2px_24px_rgba(244,63,94,0.04)]' : 'bg-white border-rose-100 shadow-[0_2px_24px_rgba(244,63,94,0.06)]'}`}>
-                        <h3 className="text-base font-bold text-rose-600 mb-1">Tehlike Bölgesi</h3>
-                        <p className={`text-xs mb-5 ${isDark ? 'text-rose-400/70' : 'text-rose-400'}`}>Bu işlemler geri alınamaz. Dikkatli olun.</p>
+                        <h3 className="text-base font-bold text-rose-600 mb-1">{t('settings.dangerTitle')}</h3>
+                        <p className={`text-xs mb-5 ${isDark ? 'text-rose-400/70' : 'text-rose-400'}`}>{t('settings.dangerSub')}</p>
 
                         <AnimatePresence mode="wait">
                             {!showConfirm ? (
                                 <motion.div key="btn" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                                     className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 py-3">
                                     <div>
-                                        <div className={`font-semibold text-sm ${titleColor}`}>Tüm Verileri Sil</div>
-                                        <div className={`text-xs mt-0.5 max-w-xs leading-relaxed ${subColor}`}>
-                                            Tüm başvurular, geçmiş ve ayarlar kalıcı olarak silinir.
-                                        </div>
+                                        <div className={`font-semibold text-sm ${titleColor}`}>{t('settings.wipeTitle')}</div>
+                                        <div className={`text-xs mt-0.5 max-w-xs leading-relaxed ${subColor}`}>{t('settings.wipeDesc')}</div>
                                     </div>
                                     <button onClick={() => setShowConfirm(true)}
                                         className="whitespace-nowrap rounded-full border border-rose-200 bg-rose-50 px-5 sm:px-6 py-2.5 text-xs font-bold text-rose-600 transition-all hover:bg-rose-600 hover:text-white hover:border-rose-600 hover:shadow-[0_4px_16px_rgba(244,63,94,0.3)]">
-                                        Tüm Verileri Sil
+                                        {t('settings.wipeBtn')}
                                     </button>
                                 </motion.div>
                             ) : (
                                 <motion.div key="confirm" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
                                     className={`rounded-2xl border p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center gap-4 ${isDark ? 'bg-rose-900/20 border-rose-800/30' : 'bg-rose-50 border-rose-200/60'}`}>
                                     <div className="flex-1">
-                                        <div className="font-bold text-rose-600 text-sm mb-1">⚠️ Bu işlem geri alınamaz!</div>
-                                        <div className={`text-xs ${isDark ? 'text-rose-400/70' : 'text-rose-600/70'}`}>Tüm başvuru verileri kalıcı olarak silinecek. Emin misiniz?</div>
+                                        <div className="font-bold text-rose-600 text-sm mb-1">{t('settings.wipeWarning')}</div>
+                                        <div className={`text-xs ${isDark ? 'text-rose-400/70' : 'text-rose-600/70'}`}>{t('settings.wipeWarningDesc')}</div>
                                     </div>
                                     <div className="flex items-center gap-3 flex-shrink-0">
                                         <button onClick={handleWipeData} disabled={wiping}
                                             className="rounded-full bg-rose-600 px-5 sm:px-6 py-2.5 text-xs font-bold text-white transition-all hover:bg-rose-700 hover:shadow-[0_4px_16px_rgba(225,29,72,0.4)] disabled:opacity-50">
-                                            {wiping ? "Siliniyor..." : "Evet, Sil"}
+                                            {wiping ? t('settings.wiping') : t('settings.wipeConfirm')}
                                         </button>
                                         <button onClick={() => setShowConfirm(false)} disabled={wiping}
                                             className={`rounded-full border px-5 sm:px-6 py-2.5 text-xs font-bold transition-all ${isDark ? 'border-white/10 text-white/60 hover:bg-white/5' : 'border-black/10 text-black/60 hover:bg-black/5'} disabled:opacity-50`}>
-                                            İptal
+                                            {t('action.cancel')}
                                         </button>
                                     </div>
                                 </motion.div>

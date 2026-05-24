@@ -11,6 +11,7 @@ import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import { useDark } from '../hooks/useDark';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
+import { useLanguage } from '../lib/i18n';
 
 // ── Status colors ──────────────────────────────────────────────────
 const STATUS_COLOR: Record<string, { bg: string; text: string; border: string }> = {
@@ -155,6 +156,7 @@ const Applications = () => {
     const PAGE_SIZE = 10;
     const [exporting, setExporting] = useState<null | 'excel' | 'pdf'>(null);
     const isDark = useDark();
+    const { t } = useLanguage();
     const importRef = useRef<HTMLInputElement>(null);
 
     const inputDark = isDark ? 'border-white/10 bg-white/5 text-white placeholder:text-white/60' : 'border-black/10 bg-[#fbfbfd]';
@@ -292,9 +294,9 @@ const Applications = () => {
                 <Reveal direction="down" duration={0.6}>
                     <div className="flex items-center gap-6">
                         <div>
-                            <Caption>TAKİP</Caption>
+                            <Caption>{t('apps.trackLabel')}</Caption>
                             <h1 className={`mt-1 text-[clamp(28px,4vw,36px)] font-bold tracking-tight ${isDark ? 'text-white' : 'text-[#1d1d1f]'}`}>
-                                Tüm Başvurular
+                                {t('apps.allApps')}
                             </h1>
                         </div>
                         <div className="flex items-center gap-2 mt-4 ml-4">
@@ -322,13 +324,13 @@ const Applications = () => {
                                 onClick={() => setViewMode('list')}
                                 className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold transition-all ${viewMode === 'list' ? 'bg-white text-black shadow-sm' : isDark ? 'text-white/50' : 'text-black/60'}`}
                             >
-                                <List size={13} /> Liste
+                                <List size={13} /> {t('apps.list')}
                             </button>
                             <button
                                 onClick={() => setViewMode('kanban')}
                                 className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold transition-all ${viewMode === 'kanban' ? 'bg-white text-black shadow-sm' : isDark ? 'text-white/50' : 'text-black/60'}`}
                             >
-                                <LayoutGrid size={13} /> Kanban
+                                <LayoutGrid size={13} /> {t('apps.kanban')}
                             </button>
                         </div>
 
@@ -338,7 +340,7 @@ const Applications = () => {
                                 <Search size={16} className={isDark ? 'text-white/70' : 'text-black/60'} />
                             </div>
                             <input type="text" value={searchTerm} onChange={e => setSearchTerm(e.target.value)}
-                                placeholder="Firma veya pozisyon..."
+                                placeholder={t('apps.searchPlaceholder')}
                                 aria-label="Başvurularda firma, pozisyon, departman ile arama yap"
                                 className={`w-full sm:w-52 rounded-full border py-2.5 pl-10 pr-4 text-sm transition-all ${inputDark}`} />
                         </div>
@@ -349,7 +351,7 @@ const Applications = () => {
                                 <Tag size={14} className={isDark ? 'text-white/70' : 'text-black/60'} />
                             </div>
                             <input type="text" value={tagFilter} onChange={e => setTagFilter(e.target.value)}
-                                placeholder="Etiket..."
+                                placeholder={t('apps.tagPlaceholder')}
                                 aria-label="Etikete göre filtrele"
                                 className={`w-full sm:w-36 rounded-full border py-2.5 pl-10 pr-4 text-sm transition-all ${inputDark}`} />
                         </div>
@@ -362,7 +364,7 @@ const Applications = () => {
                             <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)}
                                 aria-label="Duruma göre filtrele"
                                 className={`w-full sm:w-44 appearance-none rounded-full border py-2.5 pl-10 pr-8 text-sm transition-all ${inputDark}`}>
-                                <option value="">Tüm Durumlar</option>
+                                <option value="">{t('apps.allStatuses')}</option>
                                 {ALL_STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
                             </select>
                         </div>
@@ -411,17 +413,15 @@ const Applications = () => {
                                     <div className={`text-center py-16 px-6 rounded-3xl border ${isDark ? 'bg-white/5 border-white/8 text-white/60' : 'bg-white border-black/5 text-black/55'}`}>
                                         <div className="text-4xl mb-3">{hasFilter ? '🔍' : '📭'}</div>
                                         <p className={`font-bold mb-1 ${isDark ? 'text-white/85' : 'text-black/70'}`}>
-                                            {hasFilter ? 'Sonuç bulunamadı' : 'Henüz başvuru eklemediniz'}
+                                            {hasFilter ? t('apps.noResult') : t('apps.noAppsTitle')}
                                         </p>
                                         <p className={`text-sm ${isDark ? 'text-white/60' : 'text-black/60'}`}>
-                                            {hasFilter
-                                                ? 'Filtreleri sıfırlayıp tekrar deneyin.'
-                                                : 'İlk başvurunuzu eklemek için Ekle butonunu kullanın.'}
+                                            {hasFilter ? t('apps.noResultSub') : t('apps.noAppsSub')}
                                         </p>
                                         {hasFilter && (
                                             <button onClick={() => { setSearchTerm(''); setStatusFilter(''); setTagFilter(''); }}
                                                 className={`mt-5 rounded-full border px-5 py-2 text-xs font-bold transition-all ${isDark ? 'border-white/15 text-white/70 hover:bg-white/5' : 'border-black/10 text-black/70 hover:bg-black/5'}`}>
-                                                Filtreleri Temizle
+                                                {t('apps.clearFilters')}
                                             </button>
                                         )}
                                     </div>
@@ -511,21 +511,21 @@ const Applications = () => {
                                                 {app.jobLink && (
                                                     <a href={app.jobLink} target="_blank" rel="noopener noreferrer"
                                                         className="btn-gradient inline-flex items-center justify-center px-3 py-1.5 text-xs text-white rounded-full" onClick={e => e.stopPropagation()}>
-                                                        İlan
+                                                        {t('col.listing')}
                                                     </a>
                                                 )}
                                                 <button onClick={() => setSelectedApp(app)}
                                                     className={`inline-flex items-center justify-center rounded-full border px-3 py-1.5 text-xs font-semibold transition-all ${isDark ? 'border-white/10 text-white/70 hover:bg-white/5' : 'border-black/10 text-black hover:bg-black/5'}`}>
-                                                    Detay
+                                                    {t('action.detail')}
                                                 </button>
                                                 <button onClick={() => navigate(`/edit/${app.id}`)}
                                                     className="inline-flex items-center justify-center rounded-full border border-indigo-200 text-indigo-600 px-3 py-1.5 text-xs font-semibold hover:bg-indigo-50 transition-all"
-                                                    title="Düzenle">
+                                                    title={t('action.edit')}>
                                                     <Pencil size={12} />
                                                 </button>
                                                 <button onClick={() => setConfirmDeleteId(app.id)}
                                                     className="inline-flex items-center justify-center rounded-full border border-red-200 text-red-500 px-3 py-1.5 text-xs font-semibold hover:bg-red-50 transition-all"
-                                                    title="Sil">
+                                                    title={t('action.delete')}>
                                                     <Trash2 size={12} />
                                                 </button>
                                             </div>
@@ -608,11 +608,11 @@ const Applications = () => {
                                 onClick={() => { setSelectedApp(null); navigate(`/edit/${selectedApp.id}`); }}
                                 className="absolute top-6 right-16 flex items-center gap-1.5 px-4 py-2 rounded-full bg-indigo-50 text-indigo-600 text-xs font-bold hover:bg-indigo-100 transition-colors"
                             >
-                                <Pencil size={12} /> Düzenle
+                                <Pencil size={12} /> {t('action.edit')}
                             </button>
 
                             <div className="mb-8">
-                                <div className="text-sm font-semibold text-blue-500 mb-2 uppercase tracking-wide">Başvuru Detayı</div>
+                                <div className="text-sm font-semibold text-blue-500 mb-2 uppercase tracking-wide">{t('apps.detailTitle')}</div>
                                 <h3 className={`text-3xl font-bold tracking-tight ${modalText}`}>{selectedApp.companyName}</h3>
                                 <div className={`text-lg mt-1 ${subText}`}>{selectedApp.position}</div>
                                 {selectedApp.department && (
@@ -622,22 +622,22 @@ const Applications = () => {
 
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                 <div>
-                                    <div className={`text-xs font-semibold uppercase tracking-wider mb-1 ${modalSub}`}>Başvuru Tarihi</div>
-                                    <div className={`text-base font-medium ${modalText}`}>{new Date(selectedApp.date).toLocaleDateString('tr-TR')}</div>
+                                    <div className={`text-xs font-semibold uppercase tracking-wider mb-1 ${modalSub}`}>{t('apps.appDate')}</div>
+                                    <div className={`text-base font-medium ${modalText}`}>{new Date(selectedApp.date).toLocaleDateString(t('locale'))}</div>
                                 </div>
                                 <div>
-                                    <div className={`text-xs font-semibold uppercase tracking-wider mb-1 ${modalSub}`}>Durum</div>
+                                    <div className={`text-xs font-semibold uppercase tracking-wider mb-1 ${modalSub}`}>{t('col.status')}</div>
                                     <StatusBadge status={selectedApp.status} />
                                 </div>
                                 {selectedApp.priority && (
                                     <div>
-                                        <div className={`text-xs font-semibold uppercase tracking-wider mb-1 ${modalSub}`}>Öncelik</div>
+                                        <div className={`text-xs font-semibold uppercase tracking-wider mb-1 ${modalSub}`}>{t('apps.priority')}</div>
                                         <div className={`text-base font-medium ${modalText}`}>{selectedApp.priority}</div>
                                     </div>
                                 )}
                                 {(selectedApp.salaryMin || selectedApp.salaryMax) && (
                                     <div>
-                                        <div className={`text-xs font-semibold uppercase tracking-wider mb-1 ${modalSub}`}>Maaş Aralığı</div>
+                                        <div className={`text-xs font-semibold uppercase tracking-wider mb-1 ${modalSub}`}>{t('apps.salaryRange')}</div>
                                         <div className={`text-base font-medium ${modalText}`}>
                                             {selectedApp.salaryMin && selectedApp.salaryMax
                                                 ? `${selectedApp.salaryMin} – ${selectedApp.salaryMax} ${selectedApp.salaryCurrency ?? ''} / ${selectedApp.salaryPeriod ?? ''}`
@@ -648,38 +648,38 @@ const Applications = () => {
                                 )}
                                 {selectedApp.hrName && (
                                     <div>
-                                        <div className={`text-xs font-semibold uppercase tracking-wider mb-1 ${modalSub}`}>İK Uzmanı</div>
+                                        <div className={`text-xs font-semibold uppercase tracking-wider mb-1 ${modalSub}`}>{t('apps.hrExpert')}</div>
                                         <div className={`text-base font-medium ${modalText}`}>{selectedApp.hrName}</div>
                                         {selectedApp.hrEmail && <div className={`text-sm ${subText}`}>{selectedApp.hrEmail}</div>}
                                     </div>
                                 )}
                                 {selectedApp.interviewDate && (
                                     <div>
-                                        <div className={`text-xs font-semibold uppercase tracking-wider mb-1 ${modalSub}`}>Mülakat Tarihi</div>
+                                        <div className={`text-xs font-semibold uppercase tracking-wider mb-1 ${modalSub}`}>{t('apps.interviewDate')}</div>
                                         <div className={`text-base font-medium ${modalText}`}>{selectedApp.interviewDate}</div>
                                     </div>
                                 )}
                                 {selectedApp.followUpDate && (
                                     <div>
-                                        <div className={`text-xs font-semibold uppercase tracking-wider mb-1 ${modalSub}`}>Takip Tarihi</div>
+                                        <div className={`text-xs font-semibold uppercase tracking-wider mb-1 ${modalSub}`}>{t('apps.followUpDate')}</div>
                                         <div className={`text-base font-medium ${modalText}`}>{selectedApp.followUpDate}</div>
                                     </div>
                                 )}
                                 {selectedApp.offerAmount && (
                                     <div>
-                                        <div className={`text-xs font-semibold uppercase tracking-wider mb-1 ${modalSub}`}>Teklif Tutarı</div>
+                                        <div className={`text-xs font-semibold uppercase tracking-wider mb-1 ${modalSub}`}>{t('apps.offerAmount')}</div>
                                         <div className={`text-base font-medium ${modalText}`}>{selectedApp.offerAmount}</div>
                                     </div>
                                 )}
                                 <div className="sm:col-span-2">
-                                    <div className={`text-xs font-semibold uppercase tracking-wider mb-2 ${modalSub}`}>Süreç Notları</div>
+                                    <div className={`text-xs font-semibold uppercase tracking-wider mb-2 ${modalSub}`}>{t('apps.processNotes')}</div>
                                     <div className={`text-base bg-black/5 rounded-2xl p-4 min-h-[60px] ${modalText}`}>
-                                        {selectedApp.notes || 'Henüz not eklenmemiş.'}
+                                        {selectedApp.notes || t('apps.noNotes')}
                                     </div>
                                 </div>
                                 {selectedApp.motivation && (
                                     <div className="sm:col-span-2">
-                                        <div className={`text-xs font-semibold uppercase tracking-wider mb-2 ${modalSub}`}>Motivasyon Yazısı</div>
+                                        <div className={`text-xs font-semibold uppercase tracking-wider mb-2 ${modalSub}`}>{t('apps.motivationLetter')}</div>
                                         <div className={`text-base bg-black/5 rounded-2xl p-4 min-h-[60px] ${modalText}`}>
                                             {selectedApp.motivation}
                                         </div>
@@ -687,7 +687,7 @@ const Applications = () => {
                                 )}
                                 {selectedApp.interviewNotes && (
                                     <div className="sm:col-span-2">
-                                        <div className={`text-xs font-semibold uppercase tracking-wider mb-2 ${modalSub}`}>Mülakat Notları</div>
+                                        <div className={`text-xs font-semibold uppercase tracking-wider mb-2 ${modalSub}`}>{t('apps.interviewNotes')}</div>
                                         <div className={`text-base bg-black/5 rounded-2xl p-4 ${modalText}`}>
                                             {selectedApp.interviewNotes}
                                         </div>
@@ -695,9 +695,9 @@ const Applications = () => {
                                 )}
                                 {selectedApp.tags && (
                                     <div className="sm:col-span-2">
-                                        <div className={`text-xs font-semibold uppercase tracking-wider mb-2 ${modalSub}`}>Etiketler</div>
+                                        <div className={`text-xs font-semibold uppercase tracking-wider mb-2 ${modalSub}`}>{t('apps.tags')}</div>
                                         <div className="flex flex-wrap gap-2">
-                                            {selectedApp.tags.split(',').map(t => t.trim()).filter(Boolean).map(tag => (
+                                            {selectedApp.tags.split(',').map(tag => tag.trim()).filter(Boolean).map(tag => (
                                                 <span key={tag} className="text-xs font-medium px-3 py-1 rounded-full bg-indigo-50 text-indigo-600 border border-indigo-100">
                                                     {tag}
                                                 </span>
@@ -707,9 +707,9 @@ const Applications = () => {
                                 )}
                                 {selectedApp.testLink && (
                                     <div className="sm:col-span-2">
-                                        <div className={`text-xs font-semibold uppercase tracking-wider mb-2 ${modalSub}`}>Değerlendirme Testi</div>
+                                        <div className={`text-xs font-semibold uppercase tracking-wider mb-2 ${modalSub}`}>{t('apps.assessmentTest')}</div>
                                         <a href={selectedApp.testLink} target="_blank" rel="noopener noreferrer" className="inline-flex items-center text-blue-600 hover:underline font-medium">
-                                            Teste Git ↗
+                                            {t('apps.goToTest')}
                                         </a>
                                     </div>
                                 )}
@@ -737,19 +737,19 @@ const Applications = () => {
                         >
                             <div className="text-3xl mb-4 text-center">🗑️</div>
                             <h3 className={`text-xl font-bold text-center mb-2 ${isDark ? 'text-white' : 'text-[#1d1d1f]'}`}>
-                                Başvuruyu Sil
+                                {t('apps.deleteTitle')}
                             </h3>
                             <p className={`text-sm text-center mb-8 ${isDark ? 'text-white/50' : 'text-black/50'}`}>
-                                Bu başvuruyu kalıcı olarak silmek istediğinize emin misiniz?
+                                {t('apps.deleteMsg')}
                             </p>
                             <div className="flex gap-3">
                                 <button onClick={() => setConfirmDeleteId(null)} disabled={deleting}
                                     className={`flex-1 rounded-full border py-3 text-sm font-semibold transition-all ${isDark ? 'border-white/10 text-white/70' : 'border-black/10 text-black/70 hover:bg-black/5'}`}>
-                                    İptal
+                                    {t('action.cancel')}
                                 </button>
                                 <button onClick={() => handleDelete(confirmDeleteId)} disabled={deleting}
                                     className="flex-1 rounded-full bg-red-500 text-white py-3 text-sm font-bold hover:bg-red-600 transition-all disabled:opacity-50">
-                                    {deleting ? 'Siliniyor...' : 'Evet, Sil'}
+                                    {deleting ? t('action.deleting') : t('apps.confirmDelete')}
                                 </button>
                             </div>
                         </motion.div>

@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { useDark } from '../hooks/useDark';
 import { logoutUser } from '../lib/authService';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
+import { useLanguage } from '../lib/i18n';
 
 
 const statusColor: Record<string, string> = {
@@ -26,6 +27,7 @@ const Dashboard = () => {
     const logout = useAppStore(state => state.logout);
     const navigate = useNavigate();
     const isDark = useDark();
+    const { t, lang } = useLanguage();
 
     const card = isDark ? 'bg-[#1c1c1e] border-white/5 text-white' : 'bg-white border-black/5 text-[#1d1d1f]';
     const rowHover = isDark ? 'hover:bg-white/[0.03]' : 'hover:bg-[#fafafe]';
@@ -52,13 +54,14 @@ const Dashboard = () => {
         return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
     }).length;
 
-    const firstName = user?.name?.split(' ')[0] || 'Kullanıcı';
+    const firstName = user?.name?.split(' ')[0] || (lang === 'tr' ? 'Kullanıcı' : 'User');
+    const dateLocale = t('locale');
 
     const stats = [
-        { label: 'Toplam Başvuru', value: total, color: 'from-indigo-500 to-blue-600', bg: 'bg-indigo-50', text: 'text-indigo-600' },
-        { label: 'Bu Ay', value: thisMonthApps, color: 'from-sky-400 to-cyan-600', bg: 'bg-sky-50', text: 'text-sky-600' },
-        { label: 'Süreçte', value: inProgress, color: 'from-amber-400 to-orange-500', bg: 'bg-amber-50', text: 'text-amber-600' },
-        { label: 'Olumlu Sonuç', value: offers, color: 'from-emerald-400 to-teal-600', bg: 'bg-emerald-50', text: 'text-emerald-600' },
+        { label: t('dashboard.total'), value: total, color: 'from-indigo-500 to-blue-600', bg: 'bg-indigo-50', text: 'text-indigo-600' },
+        { label: t('dashboard.thisMonth'), value: thisMonthApps, color: 'from-sky-400 to-cyan-600', bg: 'bg-sky-50', text: 'text-sky-600' },
+        { label: t('dashboard.inProgress'), value: inProgress, color: 'from-amber-400 to-orange-500', bg: 'bg-amber-50', text: 'text-amber-600' },
+        { label: t('dashboard.positive'), value: offers, color: 'from-emerald-400 to-teal-600', bg: 'bg-emerald-50', text: 'text-emerald-600' },
     ];
 
     return (
@@ -86,15 +89,15 @@ const Dashboard = () => {
                     <div className="relative z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 px-8 py-8">
                         <div>
                             <p className="text-xs font-bold tracking-[0.22em] text-white/60 uppercase mb-2">
-                                {new Date().toLocaleDateString('tr-TR', { weekday: 'long', day: 'numeric', month: 'long' })}
+                                {new Date().toLocaleDateString(dateLocale, { weekday: 'long', day: 'numeric', month: 'long' })}
                             </p>
                             <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white leading-snug">
-                                Merhaba, <span className="drop-shadow-lg">{firstName}</span> 👋
+                                {t('dashboard.hello')}, <span className="drop-shadow-lg">{firstName}</span> 👋
                             </h1>
                             <p className="mt-1.5 text-sm text-white/70 font-medium">
                                 {total === 0
-                                    ? 'İlk başvurunu eklemek için hazır mısın?'
-                                    : `${total} başvuru takibinde · ${inProgress} aktif süreç`
+                                    ? t('dashboard.noApps')
+                                    : `${total} ${t('dashboard.appsTracked')} · ${inProgress} ${t('dashboard.activeProcess')}`
                                 }
                             </p>
                         </div>
@@ -102,7 +105,7 @@ const Dashboard = () => {
                             onClick={handleLogout}
                             className="self-start sm:self-auto flex-shrink-0 rounded-full bg-white/20 backdrop-blur-md border border-white/30 px-5 py-2.5 text-sm font-bold text-white transition-all hover:bg-white/30 hover:shadow-[0_4px_16px_rgba(255,255,255,0.2)]"
                         >
-                            Çıkış Yap
+                            {t('dashboard.logout')}
                         </button>
                     </div>
                     <style>{`
@@ -143,19 +146,19 @@ const Dashboard = () => {
                     transition={{ duration: 0.5, delay: 0.35, ease: 'easeOut' }}
                 >
                     <div className="flex items-center justify-between mb-6">
-                        <h2 className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-[#1d1d1f]'}`}>Son Hareketler</h2>
+                        <h2 className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-[#1d1d1f]'}`}>{t('dashboard.recentLabel')}</h2>
                         <button
                             onClick={() => navigate('/applications')}
                             className="text-sm font-semibold text-indigo-500 hover:text-indigo-400 transition-colors"
                         >
-                            Tümünü Gör →
+                            {t('dashboard.viewAll')}
                         </button>
                     </div>
 
                     {applications.length === 0 ? (
                         <div className={`flex flex-col items-center justify-center py-20 rounded-3xl border ${isDark ? 'bg-[#1c1c1e] border-white/5' : 'bg-white border-black/5'}`}>
                             <div className="text-5xl mb-4">📭</div>
-                            <p className={`font-medium ${mutedText}`}>Henüz hiç başvuru eklemedin.</p>
+                            <p className={`font-medium ${mutedText}`}>{t('dashboard.noAppsEmpty')}</p>
                         </div>
                     ) : (
                         <div className={`${card} rounded-3xl border shadow-[0_2px_24px_#00000008] overflow-x-auto`}>
@@ -172,14 +175,14 @@ const Dashboard = () => {
                                 </colgroup>
                                 <thead>
                                     <tr className={`border-b ${isDark ? 'border-white/5 bg-white/[0.02]' : 'border-black/5 bg-[#fafafa]'}`}>
-                                        <th className={`pl-6 pr-4 py-4 text-left text-xs font-bold uppercase tracking-widest ${colHead}`}>Firma / Pozisyon</th>
-                                        <th className={`px-4 py-4 text-left text-xs font-bold uppercase tracking-widest ${colHead}`}>Durum</th>
-                                        <th className={`px-4 py-4 text-left text-xs font-bold uppercase tracking-widest ${colHead}`}>Tarih</th>
-                                        <th className={`px-4 py-4 text-left text-xs font-bold uppercase tracking-widest ${colHead}`}>Platform</th>
-                                        <th className={`px-4 py-4 text-left text-xs font-bold uppercase tracking-widest ${colHead}`}>CV</th>
-                                        <th className={`px-4 py-4 text-left text-xs font-bold uppercase tracking-widest ${colHead}`}>Motivasyon</th>
-                                        <th className={`px-4 py-4 text-left text-xs font-bold uppercase tracking-widest ${colHead}`}>Test</th>
-                                        <th className={`px-4 pr-6 py-4 text-left text-xs font-bold uppercase tracking-widest ${colHead}`}>İlan</th>
+                                        <th className={`pl-6 pr-4 py-4 text-left text-xs font-bold uppercase tracking-widest ${colHead}`}>{t('col.company')}</th>
+                                        <th className={`px-4 py-4 text-left text-xs font-bold uppercase tracking-widest ${colHead}`}>{t('col.status')}</th>
+                                        <th className={`px-4 py-4 text-left text-xs font-bold uppercase tracking-widest ${colHead}`}>{t('col.date')}</th>
+                                        <th className={`px-4 py-4 text-left text-xs font-bold uppercase tracking-widest ${colHead}`}>{t('col.platform')}</th>
+                                        <th className={`px-4 py-4 text-left text-xs font-bold uppercase tracking-widest ${colHead}`}>{t('col.cv')}</th>
+                                        <th className={`px-4 py-4 text-left text-xs font-bold uppercase tracking-widest ${colHead}`}>{t('col.motivation')}</th>
+                                        <th className={`px-4 py-4 text-left text-xs font-bold uppercase tracking-widest ${colHead}`}>{t('col.test')}</th>
+                                        <th className={`px-4 pr-6 py-4 text-left text-xs font-bold uppercase tracking-widest ${colHead}`}>{t('col.listing')}</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -203,23 +206,23 @@ const Dashboard = () => {
                                                 </span>
                                             </td>
                                             <td className={`px-4 py-5 text-sm ${subText}`}>
-                                                {new Date(app.date).toLocaleDateString('tr-TR')}
+                                                {new Date(app.date).toLocaleDateString(dateLocale)}
                                             </td>
                                             <td className={`px-4 py-5 text-sm ${subText} truncate`}>{app.platform || '—'}</td>
                                             <td className={`px-4 py-5 text-sm ${subText} truncate`}>{app.cvVersion || '—'}</td>
                                             <td className={`px-4 py-5 text-sm ${subText}`}>
                                                 {app.motivation
-                                                    ? <span className="text-emerald-600 font-semibold">✓ Eklendi</span>
+                                                    ? <span className="text-emerald-600 font-semibold">✓ {lang === 'tr' ? 'Eklendi' : 'Added'}</span>
                                                     : <span className={isDark ? 'text-white/40' : 'text-black/40'}>—</span>}
                                             </td>
                                             <td className="px-4 py-5 text-sm">
                                                 {app.testLink
-                                                    ? <a href={app.testLink} target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:underline font-semibold" onClick={e => e.stopPropagation()}>Var</a>
+                                                    ? <a href={app.testLink} target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:underline font-semibold" onClick={e => e.stopPropagation()}>{lang === 'tr' ? 'Var' : 'Yes'}</a>
                                                     : <span className={isDark ? 'text-white/40' : 'text-black/40'}>—</span>}
                                             </td>
                                             <td className="px-4 pr-6 py-5">
                                                 {app.jobLink
-                                                    ? <a href={app.jobLink} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()} className="whitespace-nowrap rounded-full bg-gradient-to-r from-indigo-500 to-blue-500 px-4 py-2 text-xs font-bold text-white hover:shadow-[0_4px_16px_rgba(99,102,241,0.4)] hover:-translate-y-0.5 transition-all inline-block">İlanı Aç</a>
+                                                    ? <a href={app.jobLink} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()} className="whitespace-nowrap rounded-full bg-gradient-to-r from-indigo-500 to-blue-500 px-4 py-2 text-xs font-bold text-white hover:shadow-[0_4px_16px_rgba(99,102,241,0.4)] hover:-translate-y-0.5 transition-all inline-block">{t('apps.open')}</a>
                                                     : <span className={isDark ? 'text-white/40' : 'text-black/40'}>—</span>}
                                             </td>
                                         </motion.tr>
